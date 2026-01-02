@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeft, ChevronRight, Menu, X } from "lucide-react@0.487.0";
+import { ChevronLeft, ChevronRight } from "lucide-react@0.487.0";
 import svgPaths from "./imports/svg-53xjlwfhm8";
 import imgLogoPxme1RemovebgPreview1 from "figma:asset/6a675323d9240b366f4179dd86927cbd63e012a9.png";
 import imgEllipse6 from "figma:asset/0dbe7327a1bc1513d7647c295c4c604c864397d2.png";
@@ -84,7 +84,7 @@ function BackgroundVisuals({ activeSection, subIndex }: { activeSection: string;
   };
 
   return (
-    <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] lg:left-auto lg:right-[15vw] lg:w-[946px] lg:h-[946px] lg:translate-x-0 pointer-events-none z-0 transition-all duration-500">
+    <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] h-[95vw] sm:w-[85vw] sm:h-[85vw] md:w-[75vw] md:h-[75vw] lg:left-auto lg:right-[12vw] xl:right-[15vw] lg:w-[700px] lg:h-[700px] xl:w-[946px] xl:h-[946px] lg:translate-x-0 pointer-events-none z-0 transition-all duration-500">
       <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1262 1262" fill="none">
         <defs>
           {/* 
@@ -214,14 +214,14 @@ function DynamicHeader({ activeSection }: { activeSection: string }) {
   // Responsive measurements
   const logoWidth = isDesktop 
     ? (isMission ? "240px" : "161.65px") 
-    : (isMission ? "180px" : "120px");
+    : (isMission ? "140px" : "100px");
     
   const logoHeight = isDesktop
     ? (isMission ? "89px" : "59.87px")
-    : (isMission ? "66px" : "44px");
+    : (isMission ? "52px" : "37px");
 
-  const containerLeft = isDesktop ? "200px" : "20px";
-  const containerTop = isDesktop ? "50px" : "20px";
+  const containerLeft = isDesktop ? "200px" : "16px";
+  const containerTop = isDesktop ? "50px" : "16px";
 
   return (
     <div className="fixed left-0 top-0 bottom-0 z-40 pointer-events-none w-full">
@@ -264,15 +264,15 @@ function DynamicHeader({ activeSection }: { activeSection: string }) {
                     transition={{ duration: 0.6, delay: 0.2 }}
                     className="flex flex-col justify-end whitespace-nowrap pb-1"
                   >
-                      <div className="font-['Inter:Regular',sans-serif] font-normal text-[20px] md:text-[27px] leading-tight">
+                      <div className="font-['Inter:Regular',sans-serif] font-normal text-[16px] sm:text-[20px] md:text-[24px] lg:text-[27px] leading-tight">
                         <p className="text-[#101010] m-0">
                             <span className="font-bold bg-clip-text text-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]">10 </span>
                             <span className="font-bold bg-clip-text text-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]">anni</span>
-                            <span className="hidden md:inline"> di attività</span>
+                            <span className="hidden sm:inline"> di attività</span>
                         </p>
                       </div>
                       {activeSection !== "chi-siamo" && isDesktop && ( 
-                          <div className="font-['Inter:Regular',sans-serif] text-[27px] leading-tight mt-1"> 
+                          <div className="font-['Inter:Regular',sans-serif] text-[20px] lg:text-[27px] leading-tight mt-1"> 
                              {activeSection === "servizi" && (
                                 <p className="m-0">
                                     <span className="font-bold bg-clip-text text-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]">+2000 ore</span>
@@ -302,7 +302,7 @@ function DynamicHeader({ activeSection }: { activeSection: string }) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.8 }}
-                className="relative mt-2 md:absolute md:top-[100%] md:mt-4 md:left-0 bg-clip-text bg-gradient-to-l font-['Inter:Black',sans-serif] font-black from-[#de5ca1] leading-[normal] text-[24px] md:text-[33px] to-[#76b729] text-transparent w-full md:w-[500px]" 
+                className="relative mt-2 md:absolute md:top-[100%] md:mt-4 md:left-0 bg-clip-text bg-gradient-to-l font-['Inter:Black',sans-serif] font-black from-[#de5ca1] leading-[normal] text-[20px] sm:text-[24px] md:text-[28px] lg:text-[33px] to-[#76b729] text-transparent w-full md:w-[400px] lg:w-[500px]" 
             >
                 Il brief prende forma!
             </motion.p>
@@ -314,7 +314,6 @@ function DynamicHeader({ activeSection }: { activeSection: string }) {
 
 // --- NAVIGATION ---
 function Navigation({ activeSection, onNavigate }: { activeSection: string; onNavigate: (id: string) => void }) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navItems = [
     { id: "mission", label: "Mission" },
     { id: "chi-siamo", label: "Chi siamo" },
@@ -323,116 +322,46 @@ function Navigation({ activeSection, onNavigate }: { activeSection: string; onNa
     { id: "contattaci", label: "CONTATTACI", isContact: true },
   ];
 
-  const handleNavClick = (id: string) => {
-    onNavigate(id);
-    setIsMenuOpen(false); // Close menu on mobile after navigation
-  };
-
   return (
-    <>
-      {/* Mobile Hamburger Menu */}
-      <div className="fixed z-50 top-4 right-4 md:hidden">
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg"
-          aria-label="Toggle menu"
-        >
-          <Menu size={24} />
-        </button>
-      </div>
-
-      {/* Mobile Menu Overlay */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-black/50 md:hidden"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              className="absolute right-0 top-0 h-full w-64 bg-white shadow-xl p-6"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex flex-col gap-4 mt-12">
-                {navItems.map((item) => {
-                  const isActive = activeSection === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => handleNavClick(item.id)}
-                      className={`text-left font-black text-lg transition-colors ${
-                        isActive
-                          ? "text-transparent bg-clip-text bg-gradient-to-l from-[#de5ca1] to-[#76b729]"
-                          : item.isContact
-                          ? "text-[#d9609b]"
-                          : "text-gray-700 hover:text-gray-900"
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Desktop Navigation */}
-      <div className="hidden md:flex fixed z-50 right-[283px] top-[25px] flex-col gap-[6px] items-end pointer-events-auto">
-        {navItems.map((item) => {
-          const isActive = activeSection === item.id;
-          if (item.isContact) {
-            return (
-              <button key={item.id} onClick={() => onNavigate(item.id)} className="block cursor-pointer font-['Inter:Black',sans-serif] font-black text-[#d9609b] text-[30px] text-right">
-                {item.label}
-              </button>
-            );
-          }
+    <div className="fixed z-50 right-4 top-4 sm:right-6 sm:top-5 md:right-[180px] lg:right-[240px] xl:right-[283px] md:top-[25px] flex flex-col gap-1.5 md:gap-2 items-end pointer-events-auto">
+      {navItems.map((item) => {
+        const isActive = activeSection === item.id;
+        if (item.isContact) {
           return (
-            <div key={item.id} className="flex flex-col items-end w-full group">
-              <button
-                onClick={() => onNavigate(item.id)}
-                className={`block cursor-pointer font-['Inter:Black',sans-serif] font-black text-[30px] text-right transition-colors duration-300 ${
-                  isActive ? "text-transparent bg-clip-text bg-gradient-to-l from-[#de5ca1] to-[#76b729]" : "opacity-50 text-[#101010] hover:opacity-80"
-                }`}
-              >
-                {item.label}
-              </button>
-              <div className={`w-[77px] transition-all duration-500 overflow-hidden ${isActive ? "h-[19px] -mt-[5px]" : "h-0"}`}>
-                <svg className="block size-full" fill="none" viewBox="0 0 77 19">
-                  <line stroke="url(#paint_nav)" strokeWidth="19" x2="77" y1="9.5" y2="9.5" />
-                  <defs>
-                    <linearGradient id="paint_nav" x1="77" x2="0" y1="19.5" y2="19.5">
-                      <stop stopColor="#DE5CA1" />
-                      <stop offset="1" stopColor="#76B729" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </div>
-            </div>
+            <button 
+              key={item.id} 
+              onClick={() => onNavigate(item.id)} 
+              className="block cursor-pointer font-['Inter:Black',sans-serif] font-black text-[#d9609b] text-[17px] sm:text-[20px] md:text-[24px] lg:text-[28px] xl:text-[30px] text-right min-h-[44px] flex items-center justify-end px-2"
+            >
+              {item.label}
+            </button>
           );
-        })}
-        {/* Progress Dots */}
-        <div className="flex gap-2 mt-6">
-          {SECTIONS.map((section, index) => (
+        }
+        return (
+          <div key={item.id} className="flex flex-col items-end w-full group">
             <button
-              key={section}
-              onClick={() => handleNavClick(section)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                activeSection === section ? 'bg-gradient-to-r from-[#de5ca1] to-[#76b729] scale-125' : 'bg-gray-300 hover:bg-gray-400'
+              onClick={() => onNavigate(item.id)}
+              className={`block cursor-pointer font-['Inter:Black',sans-serif] font-black text-[17px] sm:text-[20px] md:text-[24px] lg:text-[28px] xl:text-[30px] text-right transition-colors duration-300 min-h-[44px] flex items-center justify-end px-2 ${
+                isActive ? "text-transparent bg-clip-text bg-gradient-to-l from-[#de5ca1] to-[#76b729]" : "opacity-50 text-[#101010] hover:opacity-80"
               }`}
-              aria-label={`Vai a ${navItems.find(item => item.id === section)?.label}`}
-            />
-          ))}
-        </div>
-      </div>
-    </>
+            >
+              {item.label}
+            </button>
+            <div className={`w-[50px] md:w-[77px] transition-all duration-500 overflow-hidden ${isActive ? "h-[12px] md:h-[19px] -mt-[3px] md:-mt-[5px]" : "h-0"}`}>
+              <svg className="block size-full" fill="none" viewBox="0 0 77 19">
+                <line stroke="url(#paint_nav)" strokeWidth="19" x2="77" y1="9.5" y2="9.5" />
+                <defs>
+                  <linearGradient id="paint_nav" x1="77" x2="0" y1="19.5" y2="19.5">
+                    <stop stopColor="#DE5CA1" />
+                    <stop offset="1" stopColor="#76B729" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -531,16 +460,16 @@ function ContentRenderer({ activeSection, subIndex, setSubIndex }: { activeSecti
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="absolute inset-0 pointer-events-none flex flex-col justify-center px-5 md:block md:px-0"
+          className="absolute inset-0 pointer-events-none flex flex-col justify-center px-4 sm:px-6 md:block md:px-0"
         >
            {/* Main Title Group */}
-           <div className="relative md:absolute md:left-[200px] md:top-1/2 md:-translate-y-1/2 mt-20 md:mt-0">
-              <motion.p variants={itemVariants} className="bg-clip-text bg-gradient-to-l font-['Inter:Black',sans-serif] font-black from-[#de5ca1] leading-[normal] text-[42px] md:text-[76px] to-[#76b729] text-transparent max-w-[350px] md:w-[900px] md:max-w-none">
+           <div className="relative md:absolute md:left-[140px] lg:left-[200px] md:top-1/2 md:-translate-y-1/2 mt-12 sm:mt-16 md:mt-0">
+              <motion.p variants={itemVariants} className="bg-clip-text bg-gradient-to-l font-['Inter:Black',sans-serif] font-black from-[#de5ca1] leading-[1.1] text-[34px] sm:text-[44px] md:text-[56px] lg:text-[68px] xl:text-[76px] to-[#76b729] text-transparent max-w-[280px] sm:max-w-[380px] md:w-[650px] lg:w-[800px] xl:w-[900px] md:max-w-none">
                 Il brief prende forma!
               </motion.p>
               
               {/* Keywords Rotanti */}
-              <div className="relative h-[35px] md:h-[45px] mt-2"> 
+              <div className="relative h-[32px] sm:h-[38px] md:h-[45px] mt-2"> 
                  <RotatingKeywords />
               </div>
 
@@ -549,9 +478,9 @@ function ContentRenderer({ activeSection, subIndex, setSubIndex }: { activeSecti
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 4.5, ease: "easeOut" }}
-                className="mt-[80px] md:mt-[210px]"
+                className="mt-[60px] sm:mt-[80px] md:mt-[150px] lg:mt-[210px]"
               >
-                 <p className="text-[32px] md:text-[48px]">
+                 <p className="text-[28px] sm:text-[36px] md:text-[42px] lg:text-[48px] leading-tight">
                     <span className="font-bold bg-clip-text text-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]">10 </span>
                     <span className="font-bold bg-clip-text text-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]">anni</span>
                     <span> di attività</span>
@@ -561,7 +490,7 @@ function ContentRenderer({ activeSection, subIndex, setSubIndex }: { activeSecti
                     initial={{ opacity: 0 }} 
                     animate={{ opacity: 1 }} 
                     transition={{ delay: 5.5, duration: 1 }}
-                    className="text-[16px] md:text-[18px] text-[#101010] mt-4 max-w-[300px] md:max-w-[500px] leading-relaxed"
+                    className="text-[14px] sm:text-[15px] md:text-[17px] lg:text-[18px] text-[#101010] mt-4 max-w-[280px] sm:max-w-[340px] md:max-w-[450px] lg:max-w-[500px] leading-relaxed"
                  >
                     Costruiamo identità chiare, coerenti, riconoscibili. Brand che parlano con una voce sola, ovunque.
                     <br /><br />
@@ -636,21 +565,21 @@ function ContentRenderer({ activeSection, subIndex, setSubIndex }: { activeSecti
           className="absolute inset-0 pointer-events-none"
         >
            {/* Dynamic Title based on selection */}
-           <motion.div variants={itemVariants} className="absolute left-5 top-[180px] md:left-[200px] md:top-[268px]">
-              <p className="font-bold text-[#76b729] text-[24px] sm:text-[40px] md:text-[70px] lg:text-[85px]">
+           <motion.div variants={itemVariants} className="absolute left-4 top-[140px] sm:top-[160px] md:left-[150px] lg:left-[200px] md:top-[220px] lg:top-[268px]">
+              <p className="font-bold text-[#76b729] text-[32px] sm:text-[42px] md:text-[56px] lg:text-[70px] leading-tight">
                 {SERVIZI_ITEMS[subIndex]}
               </p>
            </motion.div>
 
            {/* Service List with Scroll Selection */}
-           <motion.div variants={itemVariants} className="absolute left-5 md:left-1/2 bottom-[100px] md:bottom-[150px] md:-translate-x-1/2 flex flex-col md:flex-row gap-[10px] md:gap-[22px] items-start md:items-center pointer-events-auto">
+           <motion.div variants={itemVariants} className="absolute left-4 md:left-1/2 bottom-[80px] sm:bottom-[100px] md:bottom-[150px] md:-translate-x-1/2 flex flex-col md:flex-row gap-[8px] sm:gap-[10px] md:gap-[18px] lg:gap-[22px] items-start md:items-center pointer-events-auto max-w-[calc(100%-2rem)] md:max-w-none">
               {SERVIZI_ITEMS.map((item, index) => {
                  const isActive = subIndex === index;
                  return (
                    <button 
                      key={item}
                      onClick={() => setSubIndex(index)}
-                     className={`font-bold text-[24px] md:text-[35px] transition-all duration-300 text-left ${
+                     className={`font-bold text-[18px] sm:text-[22px] md:text-[28px] lg:text-[35px] transition-all duration-300 text-left min-h-[44px] flex items-center ${
                         isActive 
                         ? "bg-clip-text text-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]" 
                         : "text-black/50 hover:text-black/70"
@@ -731,8 +660,8 @@ function ContentRenderer({ activeSection, subIndex, setSubIndex }: { activeSecti
         >
             {/* Stats & Title */}
             <motion.div variants={itemVariants} className="absolute left-5 top-[120px] md:left-[200px] md:top-[200px] flex gap-3 md:gap-6">
-               <p className="font-bold text-[#101010] text-[24px] sm:text-[40px] md:text-[82px] lg:text-[100px]">3/83</p>
-               <p className="font-bold text-[#d72488] text-[24px] sm:text-[40px] md:text-[82px] lg:text-[100px]">Pernigotti</p>
+               <p className="font-bold text-[#101010] text-[40px] md:text-[82px]">3/83</p>
+               <p className="font-bold text-[#d72488] text-[40px] md:text-[82px]">Pernigotti</p>
             </motion.div>
             <motion.p variants={itemVariants} className="absolute left-5 top-[180px] md:left-[200px] md:top-[300px] font-bold text-[20px] md:text-[33px] text-[#a3a3a3]">Packaging</motion.p>
 
@@ -807,13 +736,13 @@ function ContentRenderer({ activeSection, subIndex, setSubIndex }: { activeSecti
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 flex items-center justify-center pointer-events-none px-5"
+            className="absolute inset-0 flex items-center justify-center pointer-events-none px-4 sm:px-6"
          >
             <motion.p 
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.8, ease: "backOut" }}
-                className="text-[28px] sm:text-[40px] md:text-[75px] lg:text-[90px] font-black text-[#d9609b] text-center leading-tight"
+                className="text-[26px] sm:text-[34px] md:text-[46px] lg:text-[58px] xl:text-[70px] 2xl:text-[75px] font-black text-[#d9609b] text-center leading-tight"
             >
                 PARLACI DEL TUO PROGETTO
             </motion.p>
