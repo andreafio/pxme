@@ -357,6 +357,19 @@ function Navigation({ activeSection, onNavigate }: { activeSection: string; onNa
           </div>
         );
       })}
+      {/* Progress Dots */}
+      <div className="flex gap-2 mt-4 md:mt-6">
+        {SECTIONS.map((section, index) => (
+          <button
+            key={section}
+            onClick={() => onNavigate(section)}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              activeSection === section ? 'bg-gradient-to-r from-[#de5ca1] to-[#76b729] scale-125' : 'bg-gray-300 hover:bg-gray-400'
+            }`}
+            aria-label={`Vai a ${navItems.find(item => item.id === section)?.label}`}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -732,7 +745,7 @@ function ContentRenderer({ activeSection, subIndex, setSubIndex }: { activeSecti
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 flex items-center justify-center pointer-events-none px-5"
+            className="absolute inset-0 flex flex-col items-center justify-center pointer-events-auto px-5 gap-8"
          >
             <motion.p 
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -742,6 +755,15 @@ function ContentRenderer({ activeSection, subIndex, setSubIndex }: { activeSecti
             >
                 PARLACI DEL TUO PROGETTO
             </motion.p>
+            <motion.a
+                href="mailto:info@pxme.it?subject=Progetto%20PXME"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.8, ease: "backOut", delay: 0.2 }}
+                className="bg-gradient-to-r from-[#de5ca1] to-[#76b729] text-white font-bold py-4 px-8 rounded-full text-xl md:text-2xl hover:scale-105 transition-transform duration-300 shadow-lg"
+            >
+                Scrivici Ora
+            </motion.a>
          </motion.div>
       )}
     </AnimatePresence>
@@ -755,7 +777,14 @@ export default function Home() {
   const [activeSectionIndex, setActiveSectionIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0); // State for internal section slides
   const [isScrolling, setIsScrolling] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const activeSection = SECTIONS[activeSectionIndex];
+
+  // Simulate loading
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Touch handling
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -880,19 +909,30 @@ export default function Home() {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
     >
-      {/* 1. Background Elements (Unified Visuals) */}
-      <BackgroundVisuals activeSection={activeSection} subIndex={subIndex} />
+      {isLoading ? (
+        <div className="flex items-center justify-center w-full h-full bg-white">
+          <div className="text-center">
+            <div className="loading w-16 h-16 bg-gradient-to-r from-[#de5ca1] to-[#76b729] rounded-full mx-auto mb-4"></div>
+            <p className="text-xl font-bold text-gray-700">Caricamento PXME...</p>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* 1. Background Elements (Unified Visuals) */}
+          <BackgroundVisuals activeSection={activeSection} subIndex={subIndex} />
 
-      {/* 2. Dynamic Header (Logo + Left Info) */}
-      <DynamicHeader activeSection={activeSection} />
+          {/* 2. Dynamic Header (Logo + Left Info) */}
+          <DynamicHeader activeSection={activeSection} />
 
-      {/* 3. Navigation (Right Side) */}
-      <Navigation activeSection={activeSection} onNavigate={handleNavigate} />
+          {/* 3. Navigation (Right Side) */}
+          <Navigation activeSection={activeSection} onNavigate={handleNavigate} />
 
-      {/* 4. Content Area (Fading In/Out Text) */}
-      <div className="relative z-10 w-full h-full">
-         <ContentRenderer activeSection={activeSection} subIndex={subIndex} setSubIndex={setSubIndex} />
-      </div>
+          {/* 4. Content Area (Fading In/Out Text) */}
+          <div className="relative z-10 w-full h-full">
+             <ContentRenderer activeSection={activeSection} subIndex={subIndex} setSubIndex={setSubIndex} />
+          </div>
+        </>
+      )}
     </div>
   );
 }
