@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeft, ChevronRight } from "lucide-react@0.487.0";
+import { ChevronLeft, ChevronRight, Menu, X } from "lucide-react@0.487.0";
 import svgPaths from "./imports/svg-53xjlwfhm8";
 import imgLogoPxme1RemovebgPreview1 from "figma:asset/6a675323d9240b366f4179dd86927cbd63e012a9.png";
 import imgEllipse6 from "figma:asset/0dbe7327a1bc1513d7647c295c4c604c864397d2.png";
@@ -314,6 +314,7 @@ function DynamicHeader({ activeSection }: { activeSection: string }) {
 
 // --- NAVIGATION ---
 function Navigation({ activeSection, onNavigate }: { activeSection: string; onNavigate: (id: string) => void }) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navItems = [
     { id: "mission", label: "Mission" },
     { id: "chi-siamo", label: "Chi siamo" },
@@ -322,42 +323,116 @@ function Navigation({ activeSection, onNavigate }: { activeSection: string; onNa
     { id: "contattaci", label: "CONTATTACI", isContact: true },
   ];
 
+  const handleNavClick = (id: string) => {
+    onNavigate(id);
+    setIsMenuOpen(false); // Close menu on mobile after navigation
+  };
+
   return (
-    <div className="fixed z-50 right-[20px] top-[20px] md:right-[283px] md:top-[25px] flex flex-col gap-[4px] md:gap-[6px] items-end pointer-events-auto">
-      {navItems.map((item) => {
-        const isActive = activeSection === item.id;
-        if (item.isContact) {
-          return (
-            <button key={item.id} onClick={() => onNavigate(item.id)} className="block cursor-pointer font-['Inter:Black',sans-serif] font-black text-[#d9609b] text-[20px] md:text-[30px] text-right">
-              {item.label}
-            </button>
-          );
-        }
-        return (
-          <div key={item.id} className="flex flex-col items-end w-full group">
-            <button
-              onClick={() => onNavigate(item.id)}
-              className={`block cursor-pointer font-['Inter:Black',sans-serif] font-black text-[20px] md:text-[30px] text-right transition-colors duration-300 ${
-                isActive ? "text-transparent bg-clip-text bg-gradient-to-l from-[#de5ca1] to-[#76b729]" : "opacity-50 text-[#101010] hover:opacity-80"
-              }`}
+    <>
+      {/* Mobile Hamburger Menu */}
+      <div className="fixed z-50 top-4 right-4 md:hidden">
+        <button
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg"
+          aria-label="Toggle menu"
+        >
+          <Menu size={24} />
+        </button>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 bg-black/50 md:hidden"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              className="absolute right-0 top-0 h-full w-64 bg-white shadow-xl p-6"
+              onClick={(e) => e.stopPropagation()}
             >
-              {item.label}
-            </button>
-            <div className={`w-[50px] md:w-[77px] transition-all duration-500 overflow-hidden ${isActive ? "h-[12px] md:h-[19px] -mt-[3px] md:-mt-[5px]" : "h-0"}`}>
-              <svg className="block size-full" fill="none" viewBox="0 0 77 19">
-                <line stroke="url(#paint_nav)" strokeWidth="19" x2="77" y1="9.5" y2="9.5" />
-                <defs>
-                  <linearGradient id="paint_nav" x1="77" x2="0" y1="19.5" y2="19.5">
-                    <stop stopColor="#DE5CA1" />
-                    <stop offset="1" stopColor="#76B729" />
-                  </linearGradient>
-                </defs>
-              </svg>
+              <div className="flex flex-col gap-4 mt-12">
+                {navItems.map((item) => {
+                  const isActive = activeSection === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleNavClick(item.id)}
+                      className={`text-left font-black text-lg transition-colors ${
+                        isActive
+                          ? "text-transparent bg-clip-text bg-gradient-to-l from-[#de5ca1] to-[#76b729]"
+                          : item.isContact
+                          ? "text-[#d9609b]"
+                          : "text-gray-700 hover:text-gray-900"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Desktop Navigation */}
+      <div className="hidden md:flex fixed z-50 right-[283px] top-[25px] flex-col gap-[6px] items-end pointer-events-auto">
+        {navItems.map((item) => {
+          const isActive = activeSection === item.id;
+          if (item.isContact) {
+            return (
+              <button key={item.id} onClick={() => onNavigate(item.id)} className="block cursor-pointer font-['Inter:Black',sans-serif] font-black text-[#d9609b] text-[30px] text-right">
+                {item.label}
+              </button>
+            );
+          }
+          return (
+            <div key={item.id} className="flex flex-col items-end w-full group">
+              <button
+                onClick={() => onNavigate(item.id)}
+                className={`block cursor-pointer font-['Inter:Black',sans-serif] font-black text-[30px] text-right transition-colors duration-300 ${
+                  isActive ? "text-transparent bg-clip-text bg-gradient-to-l from-[#de5ca1] to-[#76b729]" : "opacity-50 text-[#101010] hover:opacity-80"
+                }`}
+              >
+                {item.label}
+              </button>
+              <div className={`w-[77px] transition-all duration-500 overflow-hidden ${isActive ? "h-[19px] -mt-[5px]" : "h-0"}`}>
+                <svg className="block size-full" fill="none" viewBox="0 0 77 19">
+                  <line stroke="url(#paint_nav)" strokeWidth="19" x2="77" y1="9.5" y2="9.5" />
+                  <defs>
+                    <linearGradient id="paint_nav" x1="77" x2="0" y1="19.5" y2="19.5">
+                      <stop stopColor="#DE5CA1" />
+                      <stop offset="1" stopColor="#76B729" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
             </div>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+        {/* Progress Dots */}
+        <div className="flex gap-2 mt-6">
+          {SECTIONS.map((section, index) => (
+            <button
+              key={section}
+              onClick={() => handleNavClick(section)}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                activeSection === section ? 'bg-gradient-to-r from-[#de5ca1] to-[#76b729] scale-125' : 'bg-gray-300 hover:bg-gray-400'
+              }`}
+              aria-label={`Vai a ${navItems.find(item => item.id === section)?.label}`}
+            />
+          ))}
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -562,7 +637,7 @@ function ContentRenderer({ activeSection, subIndex, setSubIndex }: { activeSecti
         >
            {/* Dynamic Title based on selection */}
            <motion.div variants={itemVariants} className="absolute left-5 top-[180px] md:left-[200px] md:top-[268px]">
-              <p className="font-bold text-[#76b729] text-[40px] md:text-[70px]">
+              <p className="font-bold text-[#76b729] text-[24px] sm:text-[40px] md:text-[70px] lg:text-[85px]">
                 {SERVIZI_ITEMS[subIndex]}
               </p>
            </motion.div>
@@ -656,8 +731,8 @@ function ContentRenderer({ activeSection, subIndex, setSubIndex }: { activeSecti
         >
             {/* Stats & Title */}
             <motion.div variants={itemVariants} className="absolute left-5 top-[120px] md:left-[200px] md:top-[200px] flex gap-3 md:gap-6">
-               <p className="font-bold text-[#101010] text-[40px] md:text-[82px]">3/83</p>
-               <p className="font-bold text-[#d72488] text-[40px] md:text-[82px]">Pernigotti</p>
+               <p className="font-bold text-[#101010] text-[24px] sm:text-[40px] md:text-[82px] lg:text-[100px]">3/83</p>
+               <p className="font-bold text-[#d72488] text-[24px] sm:text-[40px] md:text-[82px] lg:text-[100px]">Pernigotti</p>
             </motion.div>
             <motion.p variants={itemVariants} className="absolute left-5 top-[180px] md:left-[200px] md:top-[300px] font-bold text-[20px] md:text-[33px] text-[#a3a3a3]">Packaging</motion.p>
 
@@ -738,7 +813,7 @@ function ContentRenderer({ activeSection, subIndex, setSubIndex }: { activeSecti
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.8, ease: "backOut" }}
-                className="text-[40px] md:text-[75px] font-black text-[#d9609b] text-center leading-tight"
+                className="text-[28px] sm:text-[40px] md:text-[75px] lg:text-[90px] font-black text-[#d9609b] text-center leading-tight"
             >
                 PARLACI DEL TUO PROGETTO
             </motion.p>
