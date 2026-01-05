@@ -1981,3 +1981,55 @@ html {
   syntax: "*";
   inherits: false
 }
+
+/* ============================================= */
+/* MOBILE MENU FIX: Hide nav on mobile (375-768px) */
+/* ============================================= */
+
+@media (max-width: 768px) {
+  /* Hide the vertical menu completely on mobile */
+  nav {
+    display: none !important;
+  }
+  
+  /* Show current section indicator as inline badge */
+  nav[aria-current="true"],
+  nav button[aria-current="true"],
+  .current-section {
+    display: inline-flex !important;
+    position: relative;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary-color, #8b9c3d);
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small screens: hide everything, show only content */
+  nav {
+    display: none !important;
+    visibility: hidden !important;
+    position: fixed !important;
+    right: -9999px !important;
+  }
+  
+  /* Prevent any nav from showing */
+  [role="navigation"],
+  nav,
+  .navigation,
+  .menu {
+    display: none !important;
+  }
+}
+
+/* Desktop: show nav normally (no changes) */
+@media (min-width: 769px) {
+  nav {
+    display: flex !important;
+    visibility: visible !important;
+  }
+}
+
