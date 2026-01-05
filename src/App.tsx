@@ -392,17 +392,12 @@ function RotatingKeywords() {
             transition={{ duration: 0.5 }}
           >
             <motion.p
-              animate={{ opacity: (isVisible && !isActive) ? 1 : 0 }}
+              className={`font-bold text-[22px] md:text-[32px] ${
+                isActive 
+                  ? 'bg-clip-text text-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]' 
+                  : 'text-[#a3a3a3]'
+              }`}
               transition={{ duration: 0.5 }}
-              className="font-bold text-[#a3a3a3] text-[22px] md:text-[32px]" 
-            >
-              {word}
-            </motion.p>
-
-            <motion.p
-              animate={{ opacity: (isVisible && isActive) ? 1 : 0 }}
-              transition={{ duration: 0.5 }}
-              className="absolute inset-0 font-bold text-[22px] md:text-[32px] bg-clip-text text-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]" 
             >
               {word}
             </motion.p>
