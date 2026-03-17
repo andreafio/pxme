@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeft, ChevronRight } from "lucide-react@0.487.0";
 import svgPaths from "./imports/svg-53xjlwfhm8";
 import imgLogoPxme1RemovebgPreview1 from "figma:asset/6a675323d9240b366f4179dd86927cbd63e012a9.png";
 import imgEllipse6 from "figma:asset/0dbe7327a1bc1513d7647c295c4c604c864397d2.png";
@@ -30,11 +29,89 @@ const CHI_SIAMO_SLIDES = [
 
 const SERVIZI_ITEMS = ["Brand", "Corporate identity", "Packaging", "BTL & ATL", "Web"];
 
+const FEATURED_PROJECTS = [
+  {
+    id: "pernigotti",
+    countLabel: "3/83",
+    title: "Pernigotti",
+    category: "Packaging",
+    feedbackQuote: "Il nuovo packaging comunica perfettamente la qualità e la tradizione Pernigotti, risultando distintivo e moderno. Un progetto curato nei minimi dettagli, in perfetta sintonia con i valori del nostro brand!",
+    feedbackAuthor: "— XXXX XXX | Marketing Manager Pernigotti",
+  },
+  {
+    id: "unicredit",
+    countLabel: "22/83",
+    title: "Unicredit",
+    category: "BTL & ATL",
+    feedbackQuote: "Il concept di campagna ha valorizzato il tono del brand con una presenza forte, riconoscibile e coerente su tutti i touchpoint di comunicazione.",
+    feedbackAuthor: "— XXXX XXX | Marketing Manager Unicredit",
+  },
+  {
+    id: "sauber-pharma",
+    countLabel: "37/83",
+    title: "Sauber Pharma",
+    category: "Packaging",
+    feedbackQuote: "Un progetto solido e pulito, capace di rendere immediata la lettura dell'offerta e di dare maggiore autorevolezza all'intera linea prodotto.",
+    feedbackAuthor: "— XXXX XXX | Brand Manager Sauber Pharma",
+  },
+  {
+    id: "suaviter",
+    countLabel: "41/83",
+    title: "Suaviter",
+    category: "Packaging",
+    feedbackQuote: "Il nuovo sistema visivo ha migliorato l'impatto a scaffale e rafforzato il posizionamento del marchio con una cifra estetica chiara e memorabile.",
+    feedbackAuthor: "— XXXX XXX | Marketing Manager Suaviter",
+  },
+  {
+    id: "piero-trentini",
+    countLabel: "58/83",
+    title: "Piero Trentini",
+    category: "BTL & ATL",
+    feedbackQuote: "Dalla direzione creativa alla declinazione dei materiali, tutto il progetto è stato sviluppato con precisione e una forte coerenza narrativa.",
+    feedbackAuthor: "— XXXX XXX | Marketing Manager Piero Trentini",
+  },
+] as const;
+
+const PROJECT_LIST_CATEGORIES = [
+  {
+    label: "Packaging",
+    items: [
+      { id: "pernigotti", label: "Pernigotti", featuredIndex: 0 },
+      { id: "sauber-pharma", label: "Sauber Pharma", featuredIndex: 2 },
+      { id: "suaviter", label: "Suaviter", featuredIndex: 3 },
+    ],
+  },
+  {
+    label: "Brand",
+    items: [
+      { id: "liabel", label: "Liabel" },
+      { id: "gotha-cosmetic", label: "Gotha Cosmetic" },
+      { id: "filo-alfa", label: "Filo Alfa" },
+    ],
+  },
+  {
+    label: "BTL & ATL",
+    items: [
+      { id: "unicredit", label: "Unicredit", featuredIndex: 1 },
+      { id: "sauber-pharma-btl", label: "Sauber Pharma" },
+      { id: "piero-trentini", label: "Piero Trentini", featuredIndex: 4 },
+    ],
+  },
+  {
+    label: "EVENTS",
+    items: [
+      { id: "andrea-pieralli", label: "Andrea Pieralli" },
+      { id: "italiana-assicurazioni", label: "Italiana Assicurazioni" },
+      { id: "nissan", label: "Nissan" },
+    ],
+  },
+] as const;
+
 const SECTION_COUNTS = {
   "mission": 1,
   "chi-siamo": 3,
   "servizi": SERVIZI_ITEMS.length,
-  "progetti": 1,
+  "progetti": FEATURED_PROJECTS.length,
   "contattaci": 1
 };
 
@@ -207,7 +284,7 @@ function BackgroundVisuals({ activeSection, subIndex }: { activeSection: string;
 
 // --- DYNAMIC HEADER / LOGO COMPONENT ---
 // Gestisce la transizione del Logo da "Hero" a "Sidebar con Statistiche"
-function DynamicHeader({ activeSection }: { activeSection: string }) {
+function DynamicHeader({ activeSection, children }: { activeSection: string; children?: React.ReactNode }) {
   const isMission = activeSection === "mission";
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
@@ -227,7 +304,7 @@ function DynamicHeader({ activeSection }: { activeSection: string }) {
     <div className="fixed left-0 top-0 bottom-0 z-40 pointer-events-none w-full">
        {/* Contenitore che si sposta */}
       <motion.div
-        className="absolute max-w-[50%] md:max-w-none"
+        className="absolute max-w-none"
         initial={false}
         animate={{
           left: containerLeft, 
@@ -236,7 +313,8 @@ function DynamicHeader({ activeSection }: { activeSection: string }) {
         }}
         transition={{ duration: 0.8, ease: [0.33, 1, 0.68, 1] }}
       >
-        <div className="relative flex flex-col items-start md:flex-row md:items-end"> 
+        {/* RIGA PRINCIPALE: Logo + Breadcrumb + Menu Mobile */}
+        <div className="relative flex flex-row items-center gap-4 md:gap-12"> 
           {/* LOGO */}
           <motion.div
             animate={{
@@ -253,8 +331,8 @@ function DynamicHeader({ activeSection }: { activeSection: string }) {
             />
           </motion.div>
 
-          {/* TESTO "10 ANNI" (Appare solo se !isMission) */}
-          <div className="relative md:absolute md:left-[calc(100%+48px)] md:bottom-0 flex items-end overflow-visible md:h-full mt-1 md:mt-0 md:ml-0">
+          {/* BREADCRUMB: "10 ANNI" e statistiche */}
+          <div className="flex flex-col items-start overflow-visible">
              <AnimatePresence>
                 {!isMission && (
                   <motion.div
@@ -262,9 +340,9 @@ function DynamicHeader({ activeSection }: { activeSection: string }) {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.6, delay: 0.2 }}
-                    className="flex flex-col justify-end whitespace-nowrap pb-1"
+                    className="flex flex-col justify-start whitespace-nowrap"
                   >
-                      <div className="font-['Inter:Regular',sans-serif] font-normal text-[20px] md:text-[27px] leading-tight">
+                      <div className="font-['Inter:Regular',sans-serif] font-normal text-[14px] md:text-[27px] leading-tight">
                         <p className="text-[#101010] m-0">
                             <span className="font-bold bg-clip-text text-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]">10 </span>
                             <span className="font-bold bg-clip-text text-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]">anni</span>
@@ -293,16 +371,19 @@ function DynamicHeader({ activeSection }: { activeSection: string }) {
                 )}
              </AnimatePresence>
           </div>
+
+          {/* MENU MOBILE: Burger + Voce Attiva */}
+          {!isDesktop && children}
         </div>
         
-        {/* "Il brief prende forma!" Slogan */}
+        {/* "Il brief prende forma!" Slogan - sotto la riga principale */}
         {!isMission && (
             <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.8 }}
-                className="relative mt-2 md:absolute md:top-[100%] md:mt-4 md:left-0 bg-clip-text bg-gradient-to-l font-['Inter:Black',sans-serif] font-black from-[#de5ca1] leading-[normal] text-[24px] md:text-[33px] to-[#76b729] text-transparent w-full md:w-[500px]" 
+                className="relative mt-2 bg-clip-text bg-gradient-to-l font-['Inter:Black',sans-serif] font-black from-[#de5ca1] leading-[normal] text-[24px] md:text-[33px] to-[#76b729] text-transparent w-full md:w-[500px]" 
             >
                 Il brief prende forma!
             </motion.p>
@@ -313,7 +394,21 @@ function DynamicHeader({ activeSection }: { activeSection: string }) {
 }
 
 // --- NAVIGATION ---
-function Navigation({ activeSection, onNavigate }: { activeSection: string; onNavigate: (id: string) => void }) {
+function Navigation({ activeSection, onNavigate, mobileEmbed, desktopOnly }: { activeSection: string; onNavigate: (id: string) => void; mobileEmbed?: boolean; desktopOnly?: boolean }) {
+  // TUTTI gli hook PRIMA di qualsiasi return condizionale
+  const isMobile = useMediaQuery("(max-width: 767px)");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isMobile) {
+      setIsMenuOpen(false);
+    }
+  }, [isMobile]);
+
+  // DOPO gli hook: logica condizionale per il rendering
+  if (desktopOnly && isMobile) return null;
+  if (mobileEmbed && !isMobile) return null;
+
   const navItems = [
     { id: "mission", label: "Mission" },
     { id: "chi-siamo", label: "Chi siamo" },
@@ -321,6 +416,235 @@ function Navigation({ activeSection, onNavigate }: { activeSection: string; onNa
     { id: "progetti", label: "Progetti" },
     { id: "contattaci", label: "CONTATTACI", isContact: true },
   ];
+
+  const activeItem = navItems.find((item) => item.id === activeSection) || navItems[0];
+
+  const handleMobileNavigate = (id: string) => {
+    onNavigate(id);
+    setIsMenuOpen(false);
+  };
+
+  if (isMobile && !mobileEmbed) {
+    // Non mostrare nulla: la versione mobile ora è gestita come children del logo
+    return null;
+  }
+
+  if (isMobile && mobileEmbed) {
+    // ...tutto il blocco mobile menu, ma senza fixed/absolute...
+    // Sostituisci:
+    // <div className="fixed pointer-events-auto" ... >
+    // con:
+    return (
+      <div className="flex flex-row items-center gap-3 pointer-events-auto mt-2">
+        {/* ...resto invariato, dal p label in poi... */}
+        <div className="flex flex-col items-end" style={{ alignItems: "flex-end" }}>
+          <p
+            className={`font-['Inter:Black',sans-serif] font-black text-right ${
+              activeItem.isContact
+                ? "text-[#d9609b]"
+                : "text-transparent bg-clip-text bg-gradient-to-l from-[#de5ca1] to-[#76b729]"
+            }`}
+            style={{ fontSize: 20, lineHeight: 1 }}
+          >
+            {activeItem.label}
+          </p>
+          {!activeItem.isContact && (
+            <div style={{ width: 62, height: 12, marginTop: -2 }}>
+              <svg className="block size-full" fill="none" viewBox="0 0 77 19">
+                <line stroke="url(#paint_nav_active_mobile)" strokeWidth="19" x2="77" y1="9.5" y2="9.5" />
+                <defs>
+                  <linearGradient id="paint_nav_active_mobile" x1="77" x2="0" y1="19.5" y2="19.5">
+                    <stop stopColor="#DE5CA1" />
+                    <stop offset="1" stopColor="#76B729" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          )}
+        </div>
+        {/* ...burger button come prima... */}
+        <motion.button
+          onClick={() => setIsMenuOpen((prev) => !prev)}
+          className="flex items-center justify-center"
+          style={{ width: 42, height: 42, padding: 0, border: "none", background: "none", cursor: "pointer" }}
+          aria-label={isMenuOpen ? "Chiudi menu" : "Apri menu"}
+          aria-expanded={isMenuOpen}
+        >
+          <div style={{ width: 20, height: 20, position: "relative" }}>
+            <AnimatePresence mode="wait">
+              {!isMenuOpen ? (
+                <motion.svg
+                  key="burger"
+                  width="20"
+                  height="10"
+                  viewBox="0 0 20 10"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  initial={{ opacity: 0, rotate: -20 }}
+                  animate={{ opacity: 1, rotate: 0 }}
+                  exit={{ opacity: 0, rotate: 20 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  style={{ position: "absolute", inset: 0 }}
+                >
+                  <path d="M0 0.840088H20" stroke="url(#paint0_burger)" strokeWidth="1.68" />
+                  <path d="M0 4.67993H20" stroke="url(#paint1_burger)" strokeWidth="1.68" />
+                  <path d="M0 8.67993H20" stroke="url(#paint2_burger)" strokeWidth="1.68" />
+                  <defs>
+                    <linearGradient id="paint0_burger" x1="20" y1="1.34009" x2="0" y2="1.34009" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#DE5CA1" />
+                      <stop offset="1" stopColor="#76B729" />
+                    </linearGradient>
+                    <linearGradient id="paint1_burger" x1="20" y1="5.17993" x2="0" y2="5.17993" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#DE5CA1" />
+                      <stop offset="1" stopColor="#76B729" />
+                    </linearGradient>
+                    <linearGradient id="paint2_burger" x1="20" y1="9.17993" x2="0" y2="9.17993" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#DE5CA1" />
+                      <stop offset="1" stopColor="#76B729" />
+                    </linearGradient>
+                  </defs>
+                </motion.svg>
+              ) : (
+                <motion.svg
+                  key="close"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  initial={{ opacity: 0, rotate: 20 }}
+                  animate={{ opacity: 1, rotate: 0 }}
+                  exit={{ opacity: 0, rotate: -20 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  style={{ position: "absolute", inset: 0 }}
+                >
+                  <path d="M2 2L18 18" stroke="url(#paint_x1)" strokeWidth="1.68" strokeLinecap="round" />
+                  <path d="M18 2L2 18" stroke="url(#paint_x2)" strokeWidth="1.68" strokeLinecap="round" />
+                  <defs>
+                    <linearGradient id="paint_x1" x1="20" y1="5" x2="0" y2="5" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#DE5CA1" />
+                      <stop offset="1" stopColor="#76B729" />
+                    </linearGradient>
+                    <linearGradient id="paint_x2" x1="0" y1="5" x2="20" y2="5" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#DE5CA1" />
+                      <stop offset="1" stopColor="#76B729" />
+                    </linearGradient>
+                  </defs>
+                </motion.svg>
+              )}
+            </AnimatePresence>
+          </div>
+        </motion.button>
+        {/* ...resto invariato: modale menu... */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="fixed inset-0 pointer-events-auto"
+              style={{ zIndex: 110, backgroundColor: "#e7e7e7" }}
+            >
+              {/* Pulsante X per chiudere centrato in alto */}
+              <button
+                onClick={() => setIsMenuOpen(false)}
+                className="absolute"
+                style={{ 
+                  padding: 0, 
+                  border: "none", 
+                  background: "none", 
+                  cursor: "pointer", 
+                  zIndex: 200,
+                  left: "50%",
+                  top: "40px",
+                  transform: "translateX(-50%)"
+                }}
+                aria-label="Chiudi menu"
+              >
+                <svg
+                  width="40"
+                  height="40"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M2 2L18 18" stroke="url(#paint_modal_x1)" strokeWidth="1.68" strokeLinecap="round" />
+                  <path d="M18 2L2 18" stroke="url(#paint_modal_x2)" strokeWidth="1.68" strokeLinecap="round" />
+                  <defs>
+                    <linearGradient id="paint_modal_x1" x1="20" y1="5" x2="0" y2="5" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#DE5CA1" />
+                      <stop offset="1" stopColor="#76B729" />
+                    </linearGradient>
+                    <linearGradient id="paint_modal_x2" x1="0" y1="5" x2="20" y2="5" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#DE5CA1" />
+                      <stop offset="1" stopColor="#76B729" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </button>
+
+              <div
+                className="h-full w-full flex items-center justify-center"
+                style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: "120px 24px 80px" }}
+              >
+                <div
+                  className="flex flex-col items-center"
+                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}
+                >
+                  {navItems.map((item) => {
+                    const isActive = activeSection === item.id;
+                    if (item.isContact) {
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleMobileNavigate(item.id)}
+                          className="font-['Inter:Black',sans-serif] font-black text-[#d9609b]"
+                          style={{ fontSize: 35, lineHeight: 1 }}
+                        >
+                          {item.label}
+                        </button>
+                      );
+                    }
+
+                    return (
+                      <div key={item.id} className="flex flex-col items-center" style={{ alignItems: "center" }}>
+                        <button
+                          onClick={() => handleMobileNavigate(item.id)}
+                          className={`font-['Inter:Black',sans-serif] font-black transition-colors duration-300 ${
+                            isActive
+                              ? "text-transparent bg-clip-text bg-gradient-to-l from-[#de5ca1] to-[#76b729]"
+                              : "text-[#101010]"
+                          }`}
+                          style={{ fontSize: 45, lineHeight: 1, opacity: isActive ? 1 : 0.47 }}
+                        >
+                          {item.label}
+                        </button>
+                        <div
+                          className="transition-all duration-300 overflow-hidden"
+                          style={{ width: 77, height: isActive ? 19 : 0, marginTop: isActive ? -6 : 0 }}
+                        >
+                          <svg className="block size-full" fill="none" viewBox="0 0 77 19">
+                            <line stroke="url(#paint_nav_modal_mobile)" strokeWidth="19" x2="77" y1="9.5" y2="9.5" />
+                            <defs>
+                              <linearGradient id="paint_nav_modal_mobile" x1="77" x2="0" y1="19.5" y2="19.5">
+                                <stop stopColor="#DE5CA1" />
+                                <stop offset="1" stopColor="#76B729" />
+                              </linearGradient>
+                            </defs>
+                          </svg>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed z-50 right-[20px] top-[20px] md:right-[283px] md:top-[25px] flex flex-col gap-[4px] md:gap-[6px] items-end pointer-events-auto">
@@ -408,9 +732,300 @@ function RotatingKeywords() {
   );
 }
 
+function ProjectsListOverlay({
+  isOpen,
+  onClose,
+  activeProjectId,
+  onSelectProject,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  activeProjectId: string;
+  onSelectProject: (index: number) => void;
+}) {
+  const isMobile = useMediaQuery("(max-width: 767px)");
+  const [openCategories, setOpenCategories] = useState<string[]>(["Packaging", "BTL & ATL"]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const activeCategory =
+      FEATURED_PROJECTS.find((project) => project.id === activeProjectId)?.category ?? "Packaging";
+
+    setOpenCategories((prev) => (prev.includes(activeCategory) ? prev : [...prev, activeCategory]));
+  }, [activeProjectId, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
+  const toggleCategory = (label: string) => {
+    setOpenCategories((prev) =>
+      prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label],
+    );
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        backgroundColor: "#d7d0c6",
+        zIndex: 999999,
+        pointerEvents: "auto",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {/* Header: title left, close button right */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: isMobile ? "24px 20px" : "32px 40px",
+          borderBottom: "1px solid rgba(0, 0, 0, 0.05)",
+        }}
+      >
+        <h2 style={{ fontSize: isMobile ? "36px" : "42px", fontWeight: 500, color: "#7d7b79", margin: 0 }}>
+          Lista progetti
+        </h2>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Chiudi lista progetti"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "48px",
+            height: "48px",
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            color: "#d72488",
+            transition: "opacity 0.2s",
+            flexShrink: 0,
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.7")}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+        >
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <path d="M5 5L19 19" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+            <path d="M19 5L5 19" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Content centered */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "auto",
+          padding: isMobile ? "20px" : "40px",
+        }}
+      >
+        <div style={{ width: "100%" }}>
+          {isMobile ? (
+            // MOBILE: centered content
+            <div style={{ textAlign: "center" }}>
+              <div style={{ textAlign: "left" }}>
+                {PROJECT_LIST_CATEGORIES.map((category) => {
+                  const isExpanded = openCategories.includes(category.label);
+
+                  return (
+                    <div key={category.label} style={{ marginBottom: "40px" }}>
+                      <button
+                        type="button"
+                        onClick={() => toggleCategory(category.label)}
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          marginBottom: "16px",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: "32px",
+                            fontWeight: "bold",
+                            color: "transparent",
+                            WebkitTextStroke: "1px #d72488",
+                            textTransform: "uppercase",
+                            lineHeight: 1,
+                          }}
+                        >
+                          {category.label}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "26px",
+                            fontWeight: "bold",
+                            color: "transparent",
+                            WebkitTextStroke: "1px #d72488",
+                            textTransform: "uppercase",
+                            lineHeight: 1,
+                          }}
+                        >
+                          {isExpanded ? "−" : "+"}
+                        </span>
+                      </button>
+
+                      {isExpanded && (
+                        <div style={{ paddingLeft: "56px", display: "flex", flexDirection: "column", gap: "20px" }}>
+                          {category.items.map((item) => (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => {
+                                if (typeof item.featuredIndex === "number") {
+                                  onSelectProject(item.featuredIndex);
+                                }
+                                onClose();
+                              }}
+                              style={{
+                                background: "transparent",
+                                border: "none",
+                                cursor: "pointer",
+                                fontSize: "34px",
+                                fontWeight: "bold",
+                                color: "#d72488",
+                                textAlign: "left",
+                                transition: "opacity 0.2s",
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+                              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                            >
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            // DESKTOP: centered accordion
+            <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "42px" }}>
+                {PROJECT_LIST_CATEGORIES.map((category) => {
+                  const isExpanded = openCategories.includes(category.label);
+
+                  return (
+                    <div key={category.label}>
+                      <button
+                        type="button"
+                        onClick={() => toggleCategory(category.label)}
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "14px",
+                          marginBottom: isExpanded ? "18px" : 0,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: "32px",
+                            fontWeight: "bold",
+                            color: "transparent",
+                            WebkitTextStroke: "1px #d72488",
+                            textTransform: "uppercase",
+                            lineHeight: 1,
+                          }}
+                        >
+                          {category.label}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "26px",
+                            fontWeight: "bold",
+                            color: "transparent",
+                            WebkitTextStroke: "1px #d72488",
+                            textTransform: "uppercase",
+                            lineHeight: 1,
+                          }}
+                        >
+                          {isExpanded ? "−" : "+"}
+                        </span>
+                      </button>
+
+                      {isExpanded && (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "40px", paddingLeft: "32px" }}>
+                          {category.items.map((item) => (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => {
+                                if (typeof item.featuredIndex === "number") {
+                                  onSelectProject(item.featuredIndex);
+                                }
+                                onClose();
+                              }}
+                              style={{
+                                background: "transparent",
+                                border: "none",
+                                cursor: "pointer",
+                                fontSize: "32px",
+                                fontWeight: "bold",
+                                color: "#d72488",
+                                transition: "opacity 0.2s",
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+                              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                            >
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // --- MAIN CONTENT RENDERER ---
-function ContentRenderer({ activeSection, subIndex, setSubIndex }: { activeSection: string; subIndex: number; setSubIndex: (i: number) => void }) {
+function ContentRenderer({
+  activeSection,
+  subIndex,
+  setSubIndex,
+}: {
+  activeSection: string;
+  subIndex: number;
+  setSubIndex: (i: number) => void;
+}) {
   const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const activeProject = FEATURED_PROJECTS[subIndex] ?? FEATURED_PROJECTS[0];
   
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -651,73 +1266,46 @@ function ContentRenderer({ activeSection, subIndex, setSubIndex }: { activeSecti
         >
             {/* Stats & Title */}
             <motion.div variants={itemVariants} className="absolute left-5 top-[120px] md:left-[200px] md:top-[200px] flex gap-3 md:gap-6">
-               <p className="font-bold text-[#101010] text-[40px] md:text-[82px]">3/83</p>
-               <p className="font-bold text-[#d72488] text-[40px] md:text-[82px]">Pernigotti</p>
+              <p className="font-bold text-[#101010] text-[40px] md:text-[82px]">{activeProject.countLabel}</p>
+              <p className="font-bold text-[#d72488] text-[40px] md:text-[82px]">{activeProject.title}</p>
             </motion.div>
-            <motion.p variants={itemVariants} className="absolute left-5 top-[180px] md:left-[200px] md:top-[300px] font-bold text-[20px] md:text-[33px] text-[#a3a3a3]">Packaging</motion.p>
+            <motion.p variants={itemVariants} className="absolute left-5 top-[180px] md:left-[200px] md:top-[300px] font-bold text-[20px] md:text-[33px] text-[#a3a3a3]">{activeProject.category}</motion.p>
 
             {/* Feedback Section */}
             <motion.div variants={itemVariants} className="absolute left-5 right-5 bottom-[180px] md:left-[200px] md:right-auto md:bottom-[180px] md:max-w-[500px]">
                <p className="font-extralight text-[20px] md:text-[32px]">Feedback</p>
                <div className="text-[15px] md:text-[17px] leading-[24px] md:leading-[26px] mt-2 md:mt-3">
-                 <p>"Il nuovo packaging comunica perfettamente la qualità e la tradizione Pernigotti..."</p>
-                 <p className="mt-2 md:mt-3 text-[14px] md:text-[16px]">— XXXX XXX | Marketing Manager Pernigotti</p>
+                <p>"{activeProject.feedbackQuote}"</p>
+                <p className="mt-2 md:mt-3 text-[14px] md:text-[16px]">{activeProject.feedbackAuthor}</p>
                </div>
+            </motion.div>
+
+            {/* Carousel Arrows - ancorate al cerchio progetti */}
+            <motion.div
+              variants={itemVariants}
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] md:w-[78vw] md:h-[78vw] lg:left-auto lg:right-[15vw] lg:w-[946px] lg:h-[946px] lg:translate-x-0 pointer-events-none"
+              style={{ zIndex: 120 }}
+            >
+              <button
+                onClick={() => setSubIndex((prev) => (prev === 0 ? 4 : prev - 1))}
+                className="absolute left-[-30px] top-[54%] -translate-y-1/2 pointer-events-auto md:left-[-44px] lg:left-[-58px]"
+                aria-label="Progetto precedente"
+              >
+                <svg className="block h-auto w-[64px] md:w-[82px] lg:w-[120px]" fill="none" viewBox="0 0 220 283">
+                  <path d="M110.5 4.50032C110.5 4.50032 2.44484 84.4306 4.52981 145.255C6.52445 203.443 110.5 278.5 110.5 278.5" stroke="#D72488" strokeLinecap="round" strokeWidth="9" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setSubIndex((prev) => (prev === 4 ? 0 : prev + 1))}
+                className="absolute right-[-30px] top-[54%] -translate-y-1/2 pointer-events-auto md:right-[-44px] lg:right-[-58px]"
+                aria-label="Progetto successivo"
+              >
+                <svg className="block h-auto w-[64px] md:w-[82px] lg:w-[120px]" fill="none" viewBox="0 0 220 283" style={{ transform: "scaleX(-1)" }}>
+                  <path d="M110.5 4.50032C110.5 4.50032 2.44484 84.4306 4.52981 145.255C6.52445 203.443 110.5 278.5 110.5 278.5" stroke="#D72488" strokeLinecap="round" strokeWidth="9" />
+                </svg>
+              </button>
             </motion.div>
             
-            {/* Lines decorative - Posizionate sopra l'immagine centrale */}
-            {isDesktop && (
-                <motion.div variants={itemVariants} className="absolute right-[100px] top-[320px] w-[600px]">
-                     <svg className="w-full h-auto" fill="none" viewBox="0 0 1348 283">
-                       <path d={svgPaths.p213302a0} stroke="#D72488" strokeLinecap="round" strokeWidth="9" />
-                       <path d={svgPaths.pdd98d00} stroke="#D72488" strokeLinecap="round" strokeWidth="9" />
-                     </svg>
-                </motion.div>
-            )}
-
-            {/* Navigation Arrows - Posizionate più in alto per evitare sovrapposizioni */}
-            <motion.div variants={itemVariants} className="absolute left-1/2 -translate-x-1/2 bottom-[100px] md:bottom-[80px] flex gap-4 items-center pointer-events-auto z-20">
-               <button 
-                 onClick={() => setSubIndex(Math.max(0, subIndex - 1))}
-                 className="size-[40px] md:size-[50px] rounded-full bg-white/90 hover:bg-white transition-all duration-300 flex items-center justify-center shadow-lg disabled:opacity-30 disabled:cursor-not-allowed"
-                 disabled={subIndex === 0}
-                 aria-label="Progetto precedente"
-               >
-                 <ChevronLeft className="size-[20px] md:size-[24px] text-[#101010]" />
-               </button>
-               
-               <div className="flex gap-2">
-                 {[...Array(5)].map((_, idx) => (
-                   <button
-                     key={idx}
-                     onClick={() => setSubIndex(idx)}
-                     className={`size-[8px] md:size-[10px] rounded-full transition-all duration-300 ${
-                       subIndex === idx 
-                         ? "bg-gradient-to-l from-[#de5ca1] to-[#76b729] scale-125" 
-                         : "bg-[#d9d9d9] hover:bg-[#a3a3a3]"
-                     }`}
-                     aria-label={`Vai al progetto ${idx + 1}`}
-                   />
-                 ))}
-               </div>
-
-               <button 
-                 onClick={() => setSubIndex(Math.min(4, subIndex + 1))}
-                 className="size-[40px] md:size-[50px] rounded-full bg-white/90 hover:bg-white transition-all duration-300 flex items-center justify-center shadow-lg disabled:opacity-30 disabled:cursor-not-allowed"
-                 disabled={subIndex === 4}
-                 aria-label="Progetto successivo"
-               >
-                 <ChevronRight className="size-[20px] md:size-[24px] text-[#101010]" />
-               </button>
-            </motion.div>
-
-            {/* Project List Button */}
-            <motion.div variants={itemVariants} className="absolute left-5 bottom-[20px] md:left-auto md:right-[200px] md:bottom-[30px] bg-white/80 px-[20px] py-[12px] rounded-[46px] flex gap-[10px] items-center shadow-md pointer-events-auto">
-               <p className="font-bold text-[16px] md:text-[20px] text-[#101010]">Lista progetti</p>
-               <div className="size-[18px] md:size-[22px]">
-                 <svg className="size-full" fill="none" viewBox="0 0 35 35"><path d="M10 2H35M10 6H22" stroke="#101010" strokeWidth="2"/></svg>
-               </div>
-            </motion.div>
         </motion.div>
       )}
 
@@ -750,14 +1338,22 @@ export default function Home() {
   const [activeSectionIndex, setActiveSectionIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0); // State for internal section slides
   const [isScrolling, setIsScrolling] = useState(false);
+  const [isProjectsOverlayOpen, setIsProjectsOverlayOpen] = useState(false);
   const activeSection = SECTIONS[activeSectionIndex];
 
   // Touch handling
   const [touchStart, setTouchStart] = useState<number | null>(null);
 
+  useEffect(() => {
+    if (activeSection !== "progetti" && isProjectsOverlayOpen) {
+      setIsProjectsOverlayOpen(false);
+    }
+  }, [activeSection, isProjectsOverlayOpen]);
+
   // Scroll Jacking Logic
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
+      if (isProjectsOverlayOpen) return;
       e.preventDefault(); 
       
       if (isScrolling) return;
@@ -810,7 +1406,7 @@ export default function Home() {
     
     window.addEventListener("wheel", handleWheel, { passive: false });
     return () => window.removeEventListener("wheel", handleWheel);
-  }, [isScrolling, activeSectionIndex, subIndex]);
+  }, [isScrolling, activeSectionIndex, subIndex, isProjectsOverlayOpen]);
 
   // Touch Events for Mobile Swipe
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -819,7 +1415,7 @@ export default function Home() {
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStart === null) return;
-    if (isScrolling) return;
+    if (isScrolling || isProjectsOverlayOpen) return;
 
     const touchEnd = e.changedTouches[0].clientY;
     const diff = touchStart - touchEnd;
@@ -865,29 +1461,65 @@ export default function Home() {
     const idx = SECTIONS.indexOf(id);
     if (idx !== -1) {
         setActiveSectionIndex(idx);
+        setIsProjectsOverlayOpen(false);
         setSubIndex(0); // Reset subIndex on direct nav
     }
   };
 
   return (
     <div 
-        className="bg-white relative w-screen h-screen overflow-hidden font-['Inter',sans-serif]"
+        className="bg-transparent relative w-screen h-screen overflow-hidden font-['Inter',sans-serif]"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
     >
       {/* 1. Background Elements (Unified Visuals) */}
       <BackgroundVisuals activeSection={activeSection} subIndex={subIndex} />
 
-      {/* 2. Dynamic Header (Logo + Left Info) */}
-      <DynamicHeader activeSection={activeSection} />
+      {/* 2. Dynamic Header (Logo + Left Info) + Mobile Menu */}
+      <DynamicHeader activeSection={activeSection}>
+        {/* BLOCCO MENU MOBILE */}
+        <Navigation activeSection={activeSection} onNavigate={handleNavigate} mobileEmbed />
+      </DynamicHeader>
 
-      {/* 3. Navigation (Right Side) */}
-      <Navigation activeSection={activeSection} onNavigate={handleNavigate} />
+      {/* 3. Navigation (Right Side) solo desktop */}
+      <Navigation activeSection={activeSection} onNavigate={handleNavigate} desktopOnly />
 
       {/* 4. Content Area (Fading In/Out Text) */}
       <div className="relative z-10 w-full h-full">
-         <ContentRenderer activeSection={activeSection} subIndex={subIndex} setSubIndex={setSubIndex} />
+         <ContentRenderer
+           activeSection={activeSection}
+           subIndex={subIndex}
+           setSubIndex={setSubIndex}
+         />
       </div>
+
+      {activeSection === "progetti" && !isProjectsOverlayOpen && (
+        <button
+          type="button"
+          onClick={() => setIsProjectsOverlayOpen(true)}
+          className="fixed right-3 bottom-3 md:right-[64px] md:bottom-[24px] lg:right-[74px] lg:bottom-[26px] bg-[#dfd9cf] px-[18px] py-[10px] md:px-[22px] md:py-[11px] rounded-[46px] flex gap-[8px] md:gap-[9px] items-center border border-[#d5d0c8] pointer-events-auto z-[220]"
+        >
+          <p className="font-['Roboto_Mono',monospace] font-semibold text-[14px] md:text-[18px] text-[#7c7b77] tracking-[-0.01em] leading-none">Lista progetti</p>
+          <div className="size-[16px] md:size-[18px] text-[#7c7b77]">
+            <svg className="size-full" fill="none" viewBox="0 0 24 24">
+              <path d="M4 6H16" stroke="currentColor" strokeWidth="1.85" strokeLinecap="round" />
+              <path d="M4 12H16" stroke="currentColor" strokeWidth="1.85" strokeLinecap="round" />
+              <path d="M4 18H16" stroke="currentColor" strokeWidth="1.85" strokeLinecap="round" />
+              <circle cx="20" cy="6" r="1.25" fill="currentColor" />
+              <circle cx="20" cy="12" r="1.25" fill="currentColor" />
+              <circle cx="20" cy="18" r="1.25" fill="currentColor" />
+            </svg>
+          </div>
+        </button>
+      )}
+
+      {/* 5. Projects Overlay - rendered at root level to escape stacking contexts */}
+      <ProjectsListOverlay
+        isOpen={isProjectsOverlayOpen}
+        onClose={() => setIsProjectsOverlayOpen(false)}
+        activeProjectId={FEATURED_PROJECTS[subIndex]?.id ?? "pernigotti"}
+        onSelectProject={(index) => setSubIndex(index)}
+      />
     </div>
   );
 }
