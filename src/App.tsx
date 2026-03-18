@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, type ChangeEvent, type FormEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import svgPaths from "./imports/svg-53xjlwfhm8";
 import imgLogoPxme1RemovebgPreview1 from "figma:asset/6a675323d9240b366f4179dd86927cbd63e012a9.png";
@@ -7,7 +7,8 @@ import imgEllipse4 from "figma:asset/7fa13a594a8b2c9fe104df3624d3e796b2311c01.pn
 import imgEllipse7 from "figma:asset/a328796418d2639bd6edd07e60315aef07caa296.png";
 
 // --- CONFIGURAZIONE SEZIONI ---
-const SECTIONS = ["mission", "chi-siamo", "servizi", "progetti", "contattaci"];
+const SECTIONS = ["mission", "chi-siamo", "servizi", "progetti", "contattaci"] as const;
+type SectionId = (typeof SECTIONS)[number];
 
 const CHI_SIAMO_SLIDES = [
   {
@@ -107,12 +108,45 @@ const PROJECT_LIST_CATEGORIES = [
   },
 ] as const;
 
-const SECTION_COUNTS = {
+const SECTION_COUNTS: Record<SectionId, number> = {
   "mission": 1,
   "chi-siamo": 3,
   "servizi": SERVIZI_ITEMS.length,
   "progetti": FEATURED_PROJECTS.length,
   "contattaci": 1
+};
+
+const getSectionSlideCount = (section: SectionId) => SECTION_COUNTS[section];
+
+type ContactFormState = {
+  needs: string[];
+  goal: string;
+  budget: string;
+  timeline: string;
+  brief: string;
+  fullName: string;
+  company: string;
+  phone: string;
+  email: string;
+  privacyConsent: boolean;
+  marketingConsent: boolean;
+};
+
+const CONTACT_STEPS = ["Bisogni", "Progetto", "Dati"];
+const CONTACT_NEEDS = ["Branding", "Sviluppo Web", "App Mobile", "Digital Marketing", "SEO", "E-commerce"];
+
+const INITIAL_CONTACT_FORM: ContactFormState = {
+  needs: [],
+  goal: "",
+  budget: "",
+  timeline: "",
+  brief: "",
+  fullName: "",
+  company: "",
+  phone: "",
+  email: "",
+  privacyConsent: false,
+  marketingConsent: false,
 };
 
 // --- UTILS ---
@@ -1014,13 +1048,674 @@ function ProjectsListOverlay({
   );
 }
 
+function ContactWizardSection() {
+  const [contactForm, setContactForm] = useState<ContactFormState>(INITIAL_CONTACT_FORM);
+  const [contactStep, setContactStep] = useState(1);
+  const [contactFeedback, setContactFeedback] = useState("");
+  const [contactSubmitted, setContactSubmitted] = useState(false);
+  const [hoveredNeed, setHoveredNeed] = useState<string | null>(null);
+  const [hoveredBudget, setHoveredBudget] = useState<string | null>(null);
+  const [hoveredTimeline, setHoveredTimeline] = useState<string | null>(null);
+
+  const handleContactInputChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const target = event.target;
+    const { name, value } = target;
+    const nextValue = target.type === "checkbox" ? target.checked : value;
+
+    setContactForm((prev) => ({ ...prev, [name]: nextValue }));
+    if (contactFeedback) setContactFeedback("");
+  };
+
+  const handleNeedToggle = (need: string) => {
+    setContactForm((prev) => {
+      const selected = prev.needs.includes(need);
+      return {
+        ...prev,
+        needs: selected ? prev.needs.filter((n) => n !== need) : [...prev.needs, need],
+      };
+    });
+    if (contactFeedback) setContactFeedback("");
+  };
+
+  const validateStep = (step: number) => {
+    if (step === 1) {
+      if (contactForm.needs.length === 0) return "Seleziona almeno un bisogno.";
+      if (!contactForm.goal.trim()) return "Inserisci l'obiettivo principale.";
+      return "";
+    }
+    if (step === 2) {
+      if (!contactForm.brief.trim()) return "Aggiungi un breve contesto del progetto.";
+      return "";
+    }
+    if (!contactForm.fullName.trim()) return "Inserisci nome e cognome.";
+    if (!contactForm.phone.trim()) return "Inserisci il telefono diretto.";
+    if (!contactForm.email.trim()) return "Inserisci l'email diretta.";
+    if (!contactForm.privacyConsent) return "Devi accettare l'informativa privacy.";
+    return "";
+  };
+
+  const handleNextContactStep = () => {
+    const msg = validateStep(contactStep);
+    if (msg) {
+      setContactFeedback(msg);
+      return;
+    }
+    setContactStep((prev) => Math.min(prev + 1, CONTACT_STEPS.length));
+    setContactFeedback("");
+  };
+
+  const handlePrevContactStep = () => {
+    setContactStep((prev) => Math.max(prev - 1, 1));
+    setContactFeedback("");
+  };
+
+  const handleContactSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const msg = validateStep(CONTACT_STEPS.length);
+    if (msg) {
+      setContactFeedback(msg);
+      return;
+    }
+    setContactSubmitted(true);
+    setContactForm(INITIAL_CONTACT_FORM);
+    setContactStep(1);
+    setContactFeedback("");
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: [0.22, 1, 0.36, 1],
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -20,
+      transition: { duration: 0.4 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
+  };
+
+  return (
+    <motion.div
+      key="contattaci"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="absolute inset-0 pointer-events-none flex items-center justify-center"
+    >
+      <div className="relative z-10 w-full h-full flex items-center justify-center pointer-events-auto">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="w-[900px] max-w-[90vw]"
+          style={{ width: "900px", maxWidth: "90vw" }}
+        >
+          <div className="text-center mb-12" style={{ textAlign: "center", marginBottom: "56px" }}>
+            <motion.h1
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="font-black text-[64px] leading-tight tracking-tight bg-clip-text text-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729] mb-8"
+              style={{
+                marginBottom: "34px",
+                fontSize: "clamp(42px, 6.2vw, 72px)",
+                fontWeight: 900,
+                lineHeight: 1,
+                letterSpacing: "-0.025em",
+                backgroundImage: "linear-gradient(to left, #de5ca1, #76b729)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                color: "transparent",
+              }}
+            >
+              PARLACI DEL TUO PROGETTO
+            </motion.h1>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="flex justify-center gap-3 mb-2"
+            >
+              {[1, 2, 3].map((step) => (
+                <div
+                  key={step}
+                  className={`h-1.5 rounded-full transition-all duration-500 ${
+                    step === contactStep
+                      ? "w-16 bg-gradient-to-r from-[#de5ca1] to-[#76b729]"
+                      : step < contactStep
+                      ? "w-8 bg-[#76b729]"
+                      : "w-8 bg-[#d9d9d9]"
+                  }`}
+                  style={{
+                    height: "6px",
+                    borderRadius: "999px",
+                    width: step === contactStep ? "64px" : "32px",
+                    background:
+                      step === contactStep
+                        ? "linear-gradient(to right, #de5ca1, #76b729)"
+                        : step < contactStep
+                        ? "#76b729"
+                        : "#d9d9d9",
+                    transition: "all 0.5s ease",
+                  }}
+                />
+              ))}
+            </motion.div>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="text-sm uppercase tracking-widest text-[#101010]/50 font-medium"
+              style={{ fontSize: "14px", textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(16,16,16,0.5)", fontWeight: 500 }}
+            >
+              {contactStep === 1 && "1. Bisogni"}
+              {contactStep === 2 && "2. Progetto"}
+              {contactStep === 3 && "3. Dati"}
+            </motion.p>
+          </div>
+
+          {contactSubmitted ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center justify-center py-10 text-center"
+            >
+              <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-gradient-to-tr from-[#de5ca1] to-[#76b729] shadow-xl">
+                <svg className="size-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <p className="font-black text-[28px] md:text-[42px] leading-[1] text-[#101010]">
+                Richiesta inviata.
+              </p>
+              <p className="mt-4 max-w-md text-[16px] md:text-[18px] text-[#101010]/60">
+                Il nostro team analizzerà la tua richiesta e ti contatterà entro 24 ore lavorative.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setContactSubmitted(false);
+                  setContactStep(1);
+                }}
+                className="mt-10 rounded-full bg-[#101010]/5 px-8 py-3 text-[14px] font-bold text-[#101010] transition-all hover:bg-[#101010]/10"
+              >
+                Invia un'altra richiesta
+              </button>
+            </motion.div>
+          ) : (
+            <form onSubmit={handleContactSubmit} style={{ maxWidth: "760px", margin: "0 auto" }}>
+              <AnimatePresence mode="wait">
+                {contactStep === 1 && (
+                  <motion.div
+                    key="step1"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="space-y-8"
+                    style={{ display: "flex", flexDirection: "column", gap: "44px" }}
+                  >
+                    <motion.div variants={itemVariants}>
+                      <label className="mb-4 block text-sm font-semibold uppercase tracking-widest text-[#101010]/60" style={{ marginBottom: "14px", display: "block", fontSize: "13px", letterSpacing: "0.14em", color: "#616773", fontWeight: 700 }}>
+                        DI COSA HAI BISOGNO?
+                      </label>
+                      <div className="grid grid-cols-3 gap-3" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "14px", marginBottom: "12px" }}>
+                        {CONTACT_NEEDS.map((service) => {
+                          const isSelected = contactForm.needs.includes(service);
+                          const isHovered = hoveredNeed === service;
+                          return (
+                            <button
+                              key={service}
+                              type="button"
+                              onClick={() => handleNeedToggle(service)}
+                              onMouseEnter={() => setHoveredNeed(service)}
+                              onMouseLeave={() => setHoveredNeed(null)}
+                              className={`px-6 py-3 rounded-full border-2 transition-all duration-300 font-medium ${
+                                isSelected
+                                  ? "border-transparent bg-gradient-to-r from-[#de5ca1] to-[#76b729] text-white shadow-lg scale-105"
+                                  : "border-[#d9d9d9] text-[#101010]"
+                              }`}
+                              style={{
+                                padding: "13px 20px",
+                                borderRadius: "999px",
+                                border: isSelected ? "2px solid transparent" : `2px solid ${isHovered ? "#de5ca1" : "#d9d9d9"}`,
+                                background: isSelected
+                                  ? "linear-gradient(to right, #de5ca1, #76b729)"
+                                  : isHovered
+                                  ? "rgba(255,255,255,0.85)"
+                                  : "transparent",
+                                color: isSelected ? "#fff" : isHovered ? "#d72488" : "#101010",
+                                fontWeight: 500,
+                                fontSize: "15px",
+                                lineHeight: 1.15,
+                                transform: isSelected ? "scale(1.05)" : isHovered ? "scale(1.02)" : "scale(1)",
+                                boxShadow: isSelected
+                                  ? "0 10px 24px -10px rgba(217,96,155,0.7)"
+                                  : isHovered
+                                  ? "0 8px 20px -12px rgba(16,16,16,0.25)"
+                                  : "none",
+                                transition: "all 0.25s ease",
+                                minHeight: "50px",
+                                cursor: "pointer",
+                              }}
+                            >
+                              {service}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+
+                    <motion.div variants={itemVariants}>
+                      <label
+                        htmlFor="goal"
+                        className="mb-3 block text-sm font-semibold uppercase tracking-widest text-[#101010]/60"
+                        style={{ marginBottom: "14px", display: "block", fontSize: "13px", letterSpacing: "0.14em", color: "#616773", fontWeight: 700 }}
+                      >
+                        OBIETTIVO PRINCIPALE DEL PROGETTO
+                      </label>
+                      <input
+                        id="goal"
+                        name="goal"
+                        type="text"
+                        value={contactForm.goal}
+                        onChange={handleContactInputChange}
+                        placeholder="Es. Aumentare le vendite online del 30%"
+                        className="w-full border-b-2 border-[#d9d9d9] bg-transparent py-3 text-[20px] text-[#101010] outline-none transition-colors duration-300 placeholder:text-[#101010]/30 focus:border-[#de5ca1]"
+                        style={{
+                          width: "100%",
+                          background: "transparent",
+                          border: "none",
+                          borderBottom: "2px solid #d9d9d9",
+                          padding: "14px 0 10px",
+                          fontSize: "20px",
+                          color: "#101010",
+                          outline: "none",
+                        }}
+                      />
+                    </motion.div>
+                  </motion.div>
+                )}
+
+                {contactStep === 2 && (
+                  <motion.div
+                    key="step2"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="space-y-8"
+                    style={{ display: "flex", flexDirection: "column", gap: "44px" }}
+                  >
+                    <motion.div variants={itemVariants}>
+                      <label className="mb-4 block text-sm font-semibold uppercase tracking-widest text-[#101010]/60" style={{ marginBottom: "14px", display: "block", fontSize: "13px", letterSpacing: "0.14em", color: "#616773", fontWeight: 700 }}>
+                        BUDGET
+                      </label>
+                      <div className="flex flex-wrap gap-3" style={{ display: "flex", flexWrap: "wrap", gap: "14px" }}>
+                        {[
+                          { label: "Sotto 10k", value: "<10k" },
+                          { label: "10k-25k", value: "10k-25k" },
+                          { label: "25k-50k", value: "25k-50k" },
+                          { label: "Oltre 50k", value: ">50k" },
+                        ].map((budget) => {
+                          const isSelected = contactForm.budget === budget.value;
+                          const isHovered = hoveredBudget === budget.value;
+
+                          return (
+                            <button
+                              key={budget.value}
+                              type="button"
+                              onClick={() => setContactForm({ ...contactForm, budget: budget.value })}
+                              onMouseEnter={() => setHoveredBudget(budget.value)}
+                              onMouseLeave={() => setHoveredBudget(null)}
+                              className={`px-6 py-3 rounded-full border-2 transition-all duration-300 font-medium ${
+                                isSelected
+                                  ? "border-transparent bg-gradient-to-r from-[#de5ca1] to-[#76b729] text-white shadow-lg scale-105"
+                                  : "border-[#d9d9d9] text-[#101010]"
+                              }`}
+                              style={{
+                                padding: "13px 20px",
+                                borderRadius: "999px",
+                                border: isSelected ? "2px solid transparent" : `2px solid ${isHovered ? "#de5ca1" : "#d9d9d9"}`,
+                                background: isSelected
+                                  ? "linear-gradient(to right, #de5ca1, #76b729)"
+                                  : isHovered
+                                  ? "rgba(255,255,255,0.85)"
+                                  : "transparent",
+                                color: isSelected ? "#fff" : isHovered ? "#d72488" : "#101010",
+                                fontWeight: 500,
+                                fontSize: "15px",
+                                lineHeight: 1.15,
+                                transform: isSelected ? "scale(1.05)" : isHovered ? "scale(1.02)" : "scale(1)",
+                                boxShadow: isSelected
+                                  ? "0 10px 24px -10px rgba(217,96,155,0.7)"
+                                  : isHovered
+                                  ? "0 8px 20px -12px rgba(16,16,16,0.25)"
+                                  : "none",
+                                transition: "all 300ms ease",
+                                cursor: "pointer",
+                              }}
+                            >
+                              {budget.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+
+                    <motion.div variants={itemVariants}>
+                      <label className="mb-4 block text-sm font-semibold uppercase tracking-widest text-[#101010]/60" style={{ marginBottom: "14px", display: "block", fontSize: "13px", letterSpacing: "0.14em", color: "#616773", fontWeight: 700 }}>
+                        TEMPISTICHE
+                      </label>
+                      <div className="flex flex-wrap gap-3" style={{ display: "flex", flexWrap: "wrap", gap: "14px" }}>
+                        {[
+                          { label: "Subito", value: "subito" },
+                          { label: "1-2 mesi", value: "1-2 mesi" },
+                          { label: "3-6 mesi", value: "3-6 mesi" },
+                          { label: "Senza fretta", value: "flessibile" },
+                        ].map((timeline) => {
+                          const isSelected = contactForm.timeline === timeline.value;
+                          const isHovered = hoveredTimeline === timeline.value;
+
+                          return (
+                            <button
+                              key={timeline.value}
+                              type="button"
+                              onClick={() => setContactForm({ ...contactForm, timeline: timeline.value })}
+                              onMouseEnter={() => setHoveredTimeline(timeline.value)}
+                              onMouseLeave={() => setHoveredTimeline(null)}
+                              className={`px-6 py-3 rounded-full border-2 transition-all duration-300 font-medium ${
+                                isSelected
+                                  ? "border-transparent bg-gradient-to-r from-[#de5ca1] to-[#76b729] text-white shadow-lg scale-105"
+                                  : "border-[#d9d9d9] text-[#101010]"
+                              }`}
+                              style={{
+                                padding: "13px 20px",
+                                borderRadius: "999px",
+                                border: isSelected ? "2px solid transparent" : `2px solid ${isHovered ? "#de5ca1" : "#d9d9d9"}`,
+                                background: isSelected
+                                  ? "linear-gradient(to right, #de5ca1, #76b729)"
+                                  : isHovered
+                                  ? "rgba(255,255,255,0.85)"
+                                  : "transparent",
+                                color: isSelected ? "#fff" : isHovered ? "#d72488" : "#101010",
+                                fontWeight: 500,
+                                fontSize: "15px",
+                                lineHeight: 1.15,
+                                transform: isSelected ? "scale(1.05)" : isHovered ? "scale(1.02)" : "scale(1)",
+                                boxShadow: isSelected
+                                  ? "0 10px 24px -10px rgba(217,96,155,0.7)"
+                                  : isHovered
+                                  ? "0 8px 20px -12px rgba(16,16,16,0.25)"
+                                  : "none",
+                                transition: "all 300ms ease",
+                                cursor: "pointer",
+                              }}
+                            >
+                              {timeline.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+
+                    <motion.div variants={itemVariants}>
+                      <label
+                        htmlFor="brief"
+                        className="mb-3 block text-sm font-semibold uppercase tracking-widest text-[#101010]/60"
+                        style={{ marginBottom: "14px", display: "block", fontSize: "13px", letterSpacing: "0.14em", color: "#616773", fontWeight: 700 }}
+                      >
+                        BRIEF (CONTESTO, TARGET E FUNZIONALITA)
+                      </label>
+                      <textarea
+                        id="brief"
+                        name="brief"
+                        value={contactForm.brief}
+                        onChange={handleContactInputChange}
+                        placeholder="Raccontaci il tuo progetto..."
+                        rows={4}
+                        className="w-full resize-none rounded-2xl border-2 border-[#d9d9d9] bg-transparent px-5 py-4 text-[18px] text-[#101010] outline-none transition-colors duration-300 placeholder:text-[#101010]/30 focus:border-[#de5ca1]"
+                        style={{
+                          width: "100%",
+                          minHeight: "136px",
+                          borderRadius: "18px",
+                          border: "2px solid #d9d9d9",
+                          background: "transparent",
+                          padding: "16px 18px",
+                          fontSize: "18px",
+                          color: "#101010",
+                          outline: "none",
+                        }}
+                      />
+                    </motion.div>
+                  </motion.div>
+                )}
+
+                {contactStep === 3 && (
+                  <motion.div
+                    key="step3"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="space-y-8"
+                    style={{ display: "flex", flexDirection: "column", gap: "44px" }}
+                  >
+                    <motion.div variants={itemVariants}>
+                      <label className="mb-4 block text-sm font-semibold uppercase tracking-widest text-[#101010]/60" style={{ marginBottom: "14px", display: "block", fontSize: "13px", letterSpacing: "0.14em", color: "#616773", fontWeight: 700 }}>
+                        DATI DI CONTATTO
+                      </label>
+                      <div className="grid grid-cols-2 gap-6" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "20px 22px" }}>
+                        <input
+                          type="text"
+                          name="fullName"
+                          value={contactForm.fullName}
+                          onChange={handleContactInputChange}
+                          placeholder="Nome"
+                          className="w-full border-b-2 border-[#d9d9d9] bg-transparent py-3 text-[18px] text-[#101010] outline-none transition-colors duration-300 placeholder:text-[#101010]/40 focus:border-[#de5ca1]"
+                          style={{
+                            width: "100%",
+                            background: "transparent",
+                            border: "none",
+                            borderBottom: "2px solid #d9d9d9",
+                            padding: "14px 0 10px",
+                            fontSize: "20px",
+                            color: "#101010",
+                            outline: "none",
+                          }}
+                        />
+                        <input
+                          type="text"
+                          name="company"
+                          value={contactForm.company}
+                          onChange={handleContactInputChange}
+                          placeholder="Azienda"
+                          className="w-full border-b-2 border-[#d9d9d9] bg-transparent py-3 text-[18px] text-[#101010] outline-none transition-colors duration-300 placeholder:text-[#101010]/40 focus:border-[#de5ca1]"
+                          style={{
+                            width: "100%",
+                            background: "transparent",
+                            border: "none",
+                            borderBottom: "2px solid #d9d9d9",
+                            padding: "14px 0 10px",
+                            fontSize: "20px",
+                            color: "#101010",
+                            outline: "none",
+                          }}
+                        />
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={contactForm.phone}
+                          onChange={handleContactInputChange}
+                          placeholder="Telefono"
+                          className="w-full border-b-2 border-[#d9d9d9] bg-transparent py-3 text-[18px] text-[#101010] outline-none transition-colors duration-300 placeholder:text-[#101010]/40 focus:border-[#de5ca1]"
+                          style={{
+                            width: "100%",
+                            background: "transparent",
+                            border: "none",
+                            borderBottom: "2px solid #d9d9d9",
+                            padding: "14px 0 10px",
+                            fontSize: "20px",
+                            color: "#101010",
+                            outline: "none",
+                          }}
+                        />
+                        <input
+                          type="email"
+                          name="email"
+                          value={contactForm.email}
+                          onChange={handleContactInputChange}
+                          placeholder="Email"
+                          className="w-full border-b-2 border-[#d9d9d9] bg-transparent py-3 text-[18px] text-[#101010] outline-none transition-colors duration-300 placeholder:text-[#101010]/40 focus:border-[#de5ca1]"
+                          style={{
+                            width: "100%",
+                            background: "transparent",
+                            border: "none",
+                            borderBottom: "2px solid #d9d9d9",
+                            padding: "14px 0 10px",
+                            fontSize: "20px",
+                            color: "#101010",
+                            outline: "none",
+                          }}
+                        />
+                      </div>
+                    </motion.div>
+
+                    <motion.div variants={itemVariants} className="space-y-4 pt-4" style={{ paddingTop: "8px", display: "flex", flexDirection: "column", gap: "14px" }}>
+                      <label className="group flex cursor-pointer items-start gap-3">
+                        <div className="relative mt-0.5 flex items-center justify-center">
+                          <input
+                            type="checkbox"
+                            name="privacyConsent"
+                            checked={contactForm.privacyConsent}
+                            onChange={handleContactInputChange}
+                            className="size-5 cursor-pointer appearance-none rounded border-2 border-[#d9d9d9] transition-all duration-300 checked:border-[#76b729] checked:bg-gradient-to-r checked:from-[#de5ca1] checked:to-[#76b729]"
+                          />
+                          {contactForm.privacyConsent && (
+                            <svg className="pointer-events-none absolute size-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </div>
+                        <span className="text-[15px] leading-relaxed text-[#101010]">
+                            Ho letto e accetto la{" "}
+                            <a href="#privacy" className="underline transition-colors hover:text-[#de5ca1]">
+                              Privacy Policy
+                            </a>
+                        </span>
+                      </label>
+
+                      <label className="group flex cursor-pointer items-start gap-3">
+                        <div className="relative mt-0.5 flex items-center justify-center">
+                          <input
+                            type="checkbox"
+                            name="marketingConsent"
+                            checked={contactForm.marketingConsent}
+                            onChange={handleContactInputChange}
+                            className="size-5 cursor-pointer appearance-none rounded border-2 border-[#d9d9d9] transition-all duration-300 checked:border-[#76b729] checked:bg-gradient-to-r checked:from-[#de5ca1] checked:to-[#76b729]"
+                          />
+                          {contactForm.marketingConsent && (
+                            <svg className="pointer-events-none absolute size-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </div>
+                        <span className="text-[15px] leading-relaxed text-[#101010]">
+                          Acconsento al trattamento dei dati per finalità di marketing
+                        </span>
+                      </label>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="mt-12 flex items-center justify-between"
+                style={{ marginTop: "58px", display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "6px" }}
+              >
+                <div className="flex items-center gap-4">
+                  {contactStep > 1 ? (
+                    <button
+                      type="button"
+                      onClick={handlePrevContactStep}
+                      className="px-8 py-3 font-semibold text-[#101010] transition-colors duration-300 hover:text-[#de5ca1]"
+                    >
+                      ← Indietro
+                    </button>
+                  ) : null}
+                  {contactFeedback && <span className="text-[12px] font-bold text-[#de5ca1]">{contactFeedback}</span>}
+                </div>
+
+                <div className="flex-1" />
+
+                {contactStep < 3 ? (
+                  <button
+                    type="button"
+                    onClick={handleNextContactStep}
+                    className="group relative overflow-hidden rounded-full px-10 py-4 text-[18px] font-black text-white transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                    style={{
+                      position: "relative",
+                      overflow: "hidden",
+                      borderRadius: "999px",
+                      padding: "16px 40px",
+                      fontSize: "18px",
+                      fontWeight: 900,
+                      color: "#fff",
+                      background: "linear-gradient(to right, #de5ca1, #76b729)",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <span className="relative">Avanti →</span>
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={!contactForm.privacyConsent}
+                    className="group relative overflow-hidden rounded-full px-10 py-4 text-[18px] font-black text-white transition-all duration-300 hover:scale-105 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#de5ca1] to-[#76b729]" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#76b729] to-[#de5ca1] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                    <span className="relative">Invia Progetto</span>
+                  </button>
+                )}
+              </motion.div>
+            </form>
+          )}
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+}
+
 // --- MAIN CONTENT RENDERER ---
 function ContentRenderer({
   activeSection,
   subIndex,
   setSubIndex,
 }: {
-  activeSection: string;
+  activeSection: SectionId;
   subIndex: number;
   setSubIndex: (i: number) => void;
 }) {
@@ -1310,22 +2005,7 @@ function ContentRenderer({
       )}
 
       {activeSection === "contattaci" && (
-         <motion.div
-            key="contattaci"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 flex items-center justify-center pointer-events-none px-5"
-         >
-            <motion.p 
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.8, ease: "backOut" }}
-                className="text-[40px] md:text-[75px] font-black text-[#d9609b] text-center leading-tight"
-            >
-                PARLACI DEL TUO PROGETTO
-            </motion.p>
-         </motion.div>
+        <ContactWizardSection />
       )}
     </AnimatePresence>
   );
@@ -1339,7 +2019,7 @@ export default function Home() {
   const [subIndex, setSubIndex] = useState(0); // State for internal section slides
   const [isScrolling, setIsScrolling] = useState(false);
   const [isProjectsOverlayOpen, setIsProjectsOverlayOpen] = useState(false);
-  const activeSection = SECTIONS[activeSectionIndex];
+  const activeSection = SECTIONS[activeSectionIndex] ?? "mission";
 
   // Touch handling
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -1358,9 +2038,8 @@ export default function Home() {
       
       if (isScrolling) return;
 
-      const currentSection = SECTIONS[activeSectionIndex];
-      // Type assertion needed because TS doesn't know SECTION_COUNTS keys match SECTIONS values exactly 
-      const subSlideCount = (SECTION_COUNTS as any)[currentSection] || 1;
+      const currentSection = SECTIONS[activeSectionIndex] ?? "mission";
+      const subSlideCount = getSectionSlideCount(currentSection);
 
       if (e.deltaY > 50) {
         // Scroll Down
@@ -1389,8 +2068,8 @@ export default function Home() {
              if (activeSectionIndex > 0) {
                  setIsScrolling(true);
                  const prevIndex = activeSectionIndex - 1;
-                 const prevSection = SECTIONS[prevIndex];
-                 const prevSlideCount = (SECTION_COUNTS as any)[prevSection] || 1;
+                 const prevSection = SECTIONS[prevIndex] ?? "mission";
+                 const prevSlideCount = getSectionSlideCount(prevSection);
                  
                  setActiveSectionIndex(prevIndex);
                  // Optional: start at last slide of previous section? 
@@ -1420,8 +2099,8 @@ export default function Home() {
     const touchEnd = e.changedTouches[0].clientY;
     const diff = touchStart - touchEnd;
     
-    const currentSection = SECTIONS[activeSectionIndex];
-    const subSlideCount = (SECTION_COUNTS as any)[currentSection] || 1;
+    const currentSection = SECTIONS[activeSectionIndex] ?? "mission";
+    const subSlideCount = getSectionSlideCount(currentSection);
 
     if (Math.abs(diff) > 50) { // Threshold 50px
         if (diff > 0) {
@@ -1445,8 +2124,8 @@ export default function Home() {
            } else if (activeSectionIndex > 0) {
                 setIsScrolling(true);
                 const prevIndex = activeSectionIndex - 1;
-                const prevSection = SECTIONS[prevIndex];
-                const prevSlideCount = (SECTION_COUNTS as any)[prevSection] || 1;
+                const prevSection = SECTIONS[prevIndex] ?? "mission";
+                const prevSlideCount = getSectionSlideCount(prevSection);
                 
                 setActiveSectionIndex(prevIndex);
                 setSubIndex(prevSlideCount - 1);
