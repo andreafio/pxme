@@ -44,32 +44,6 @@ export function BackgroundVisuals({ activeSection, subIndex, imageSrc }: Backgro
 
   return (
     <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] lg:left-auto lg:right-[15vw] lg:w-[946px] lg:h-[946px] lg:translate-x-0 pointer-events-none z-0 transition-all duration-500" style={{ margin: 0, padding: 0 }}>
-      {isProjectVisual && (
-        <div
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "74%",
-            height: "74%",
-            borderRadius: "50%",
-            overflow: "hidden",
-          }}
-        >
-          <img
-            src={imageSrc}
-            alt="Project visual"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              objectPosition: "center",
-              display: "block",
-            }}
-          />
-        </div>
-      )}
 
       <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1262 1262" fill="none">
         <defs>

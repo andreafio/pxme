@@ -48,7 +48,7 @@ export function PxmeLayout1_Challenge({ section, project, sectionIndex, scrollCo
         </div>
 
           <div style={{ flex: '0 0 60%', minWidth: 0, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: '20px' }}>
-            <GraficoProgetto image={graphicImage} alt={section.title} />
+            <GraficoProgetto image={graphicImage} alt={section.title} sectionIndex={sectionIndex} />
           </div>
         </div>
       </div>
