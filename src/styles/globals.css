@@ -1,6 +1,12 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --header-height: 140px;
+  --header-bottom: 80px;
+  --col-left: 150px;
+  --col-right: 55vw;
+  --row-start: 180px;
+  --img-size: min(38vh, 360px);
   --font-size: 16px;
   --background: #ffffff;
   --foreground: oklch(0.145 0 0);
@@ -131,4 +137,14 @@
 
 html {
   font-size: var(--font-size);
+}
+
+/* Internal scroll for project sections — hides scrollbar while keeping functionality */
+.section-scroll-inner {
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE/Edge */
+}
+
+.section-scroll-inner::-webkit-scrollbar {
+  display: none;               /* Chrome, Safari, Opera */
 }

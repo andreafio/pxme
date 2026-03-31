@@ -1,30 +1,32 @@
-import { useState, useEffect, useMemo, type ChangeEvent, type FormEvent } from "react";
+﻿import { useState, useEffect, useMemo, useCallback, useRef, type ChangeEvent, type FormEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import svgPaths from "./imports/svg-53xjlwfhm8";
+import { BackgroundVisuals } from "./components/BackgroundVisuals";
+import { ProjectSectionRenderer } from "./components/projects/sections/registry";
+import type { CarouselProject, ProjectSection } from "./components/projects/sections/types";
 import imgLogoPxme1RemovebgPreview1 from "figma:asset/6a675323d9240b366f4179dd86927cbd63e012a9.png";
 import imgEllipse6 from "figma:asset/0dbe7327a1bc1513d7647c295c4c604c864397d2.png";
 import imgEllipse4 from "figma:asset/7fa13a594a8b2c9fe104df3624d3e796b2311c01.png";
 import imgEllipse7 from "figma:asset/a328796418d2639bd6edd07e60315aef07caa296.png";
 
 // --- CONFIGURAZIONE SEZIONI ---
-const SECTIONS = ["mission", "chi-siamo", "servizi", "progetti", "contattaci"] as const;
+const SECTIONS = ["mission", "chi-siamo", "servizi", "contattaci"] as const;
 type SectionId = (typeof SECTIONS)[number];
 
 const CHI_SIAMO_SLIDES = [
   {
     id: 0,
-    text: `Diamo voce al tuo marchio con anima e tecnica: strategia, identità visiva, storytelling e coerenza comunicativa diventano un'unica esperienza distintiva.`,
+    text: `Diamo voce al tuo marchio con anima e tecnica: strategia, identitÃ  visiva, storytelling e coerenza comunicativa diventano un'unica esperienza distintiva.`,
     highlight: `Noi non "facciamo loghi", creiamo brand capaci di risuonare dentro, di conquistare uno spazio nel cuore delle persone e nella mente del mercato.`
   },
   {
     id: 1,
-    text: `Ogni progetto è un viaggio condiviso. Ascoltiamo la tua storia, analizziamo il tuo mercato e traduciamo i tuoi valori in un linguaggio visivo potente e riconoscibile.`,
-    highlight: `Il design non è solo estetica, è la sintesi perfetta tra forma e funzione, pensata per durare nel tempo ed evolvere con il tuo business.`
+    text: `Ogni progetto Ã¨ un viaggio condiviso. Ascoltiamo la tua storia, analizziamo il tuo mercato e traduciamo i tuoi valori in un linguaggio visivo potente e riconoscibile.`,
+    highlight: `Il design non Ã¨ solo estetica, Ã¨ la sintesi perfetta tra forma e funzione, pensata per durare nel tempo ed evolvere con il tuo business.`
   },
   {
     id: 2,
     text: `Dalla carta al digitale, costruiamo ecosistemi di brand coerenti. Che si tratti di packaging, web design o campagne advertising, il nostro approccio rimane sartoriale.`,
-    highlight: `Perché un brand forte non deve solo farsi notare, deve farsi ricordare e scegliere, oggi e domani.`
+    highlight: `PerchÃ© un brand forte non deve solo farsi notare, deve farsi ricordare e scegliere, oggi e domani.`
   }
 ];
 
@@ -36,8 +38,8 @@ const FEATURED_PROJECTS = [
     countLabel: "3/83",
     title: "Pernigotti",
     category: "Packaging",
-    feedbackQuote: "Il nuovo packaging comunica perfettamente la qualità e la tradizione Pernigotti, risultando distintivo e moderno. Un progetto curato nei minimi dettagli, in perfetta sintonia con i valori del nostro brand!",
-    feedbackAuthor: "— XXXX XXX | Marketing Manager Pernigotti",
+    feedbackQuote: "Il nuovo packaging comunica perfettamente la qualitÃ  e la tradizione Pernigotti, risultando distintivo e moderno. Un progetto curato nei minimi dettagli, in perfetta sintonia con i valori del nostro brand!",
+    feedbackAuthor: "â€” XXXX XXX | Marketing Manager Pernigotti",
   },
   {
     id: "unicredit",
@@ -45,7 +47,7 @@ const FEATURED_PROJECTS = [
     title: "Unicredit",
     category: "BTL & ATL",
     feedbackQuote: "Il concept di campagna ha valorizzato il tono del brand con una presenza forte, riconoscibile e coerente su tutti i touchpoint di comunicazione.",
-    feedbackAuthor: "— XXXX XXX | Marketing Manager Unicredit",
+    feedbackAuthor: "â€” XXXX XXX | Marketing Manager Unicredit",
   },
   {
     id: "sauber-pharma",
@@ -53,7 +55,7 @@ const FEATURED_PROJECTS = [
     title: "Sauber Pharma",
     category: "Packaging",
     feedbackQuote: "Un progetto solido e pulito, capace di rendere immediata la lettura dell'offerta e di dare maggiore autorevolezza all'intera linea prodotto.",
-    feedbackAuthor: "— XXXX XXX | Brand Manager Sauber Pharma",
+    feedbackAuthor: "â€” XXXX XXX | Brand Manager Sauber Pharma",
   },
   {
     id: "suaviter",
@@ -61,15 +63,47 @@ const FEATURED_PROJECTS = [
     title: "Suaviter",
     category: "Packaging",
     feedbackQuote: "Il nuovo sistema visivo ha migliorato l'impatto a scaffale e rafforzato il posizionamento del marchio con una cifra estetica chiara e memorabile.",
-    feedbackAuthor: "— XXXX XXX | Marketing Manager Suaviter",
+    feedbackAuthor: "â€” XXXX XXX | Marketing Manager Suaviter",
   },
   {
     id: "piero-trentini",
     countLabel: "58/83",
     title: "Piero Trentini",
     category: "BTL & ATL",
-    feedbackQuote: "Dalla direzione creativa alla declinazione dei materiali, tutto il progetto è stato sviluppato con precisione e una forte coerenza narrativa.",
-    feedbackAuthor: "— XXXX XXX | Marketing Manager Piero Trentini",
+    feedbackQuote: "Dalla direzione creativa alla declinazione dei materiali, tutto il progetto Ã¨ stato sviluppato con precisione e una forte coerenza narrativa.",
+    feedbackAuthor: "â€” XXXX XXX | Marketing Manager Piero Trentini",
+  },
+  {
+    id: "brand-lab-test",
+    countLabel: "64/83",
+    title: "Brand Lab Test",
+    category: "Brand",
+    feedbackQuote: "Il lavoro di identita visiva ha reso il posizionamento immediato e molto piu riconoscibile sul mercato.",
+    feedbackAuthor: "â€” Test User | Brand Manager",
+  },
+  {
+    id: "packaging-test-alpha",
+    countLabel: "69/83",
+    title: "Packaging Test Alpha",
+    category: "Packaging",
+    feedbackQuote: "Ottimo bilanciamento tra leggibilita e impatto a scaffale: il prodotto ora si distingue davvero.",
+    feedbackAuthor: "â€” Test User | Product Lead",
+  },
+  {
+    id: "atl-test-beta",
+    countLabel: "73/83",
+    title: "ATL Test Beta",
+    category: "BTL & ATL",
+    feedbackQuote: "La campagna ha mantenuto coerenza narrativa su tutti i touchpoint e aumentato la memorabilita del brand.",
+    feedbackAuthor: "â€” Test User | Campaign Lead",
+  },
+  {
+    id: "event-test-gamma",
+    countLabel: "79/83",
+    title: "Event Test Gamma",
+    category: "EVENTS",
+    feedbackQuote: "Esperienza evento molto chiara, orchestrata bene e con una direzione visiva forte in ogni momento.",
+    feedbackAuthor: "â€” Test User | Event Manager",
   },
 ] as const;
 
@@ -80,6 +114,7 @@ const PROJECT_LIST_CATEGORIES = [
       { id: "pernigotti", label: "Pernigotti", featuredIndex: 0 },
       { id: "sauber-pharma", label: "Sauber Pharma", featuredIndex: 2 },
       { id: "suaviter", label: "Suaviter", featuredIndex: 3 },
+      { id: "packaging-test-alpha", label: "Packaging Test Alpha", featuredIndex: 6 },
     ],
   },
   {
@@ -88,6 +123,7 @@ const PROJECT_LIST_CATEGORIES = [
       { id: "liabel", label: "Liabel" },
       { id: "gotha-cosmetic", label: "Gotha Cosmetic" },
       { id: "filo-alfa", label: "Filo Alfa" },
+      { id: "brand-lab-test", label: "Brand Lab Test", featuredIndex: 5 },
     ],
   },
   {
@@ -96,6 +132,7 @@ const PROJECT_LIST_CATEGORIES = [
       { id: "unicredit", label: "Unicredit", featuredIndex: 1 },
       { id: "sauber-pharma-btl", label: "Sauber Pharma" },
       { id: "piero-trentini", label: "Piero Trentini", featuredIndex: 4 },
+      { id: "atl-test-beta", label: "ATL Test Beta", featuredIndex: 7 },
     ],
   },
   {
@@ -104,6 +141,7 @@ const PROJECT_LIST_CATEGORIES = [
       { id: "andrea-pieralli", label: "Andrea Pieralli" },
       { id: "italiana-assicurazioni", label: "Italiana Assicurazioni" },
       { id: "nissan", label: "Nissan" },
+      { id: "event-test-gamma", label: "Event Test Gamma", featuredIndex: 8 },
     ],
   },
 ] as const;
@@ -112,18 +150,12 @@ const SECTION_COUNTS: Record<SectionId, number> = {
   "mission": 1,
   "chi-siamo": 3,
   "servizi": SERVIZI_ITEMS.length,
-  "progetti": FEATURED_PROJECTS.length,
   "contattaci": 1
 };
 
 const getSectionSlideCount = (section: SectionId) => SECTION_COUNTS[section];
 
 type ContactFormState = {
-  needs: string[];
-  goal: string;
-  budget: string;
-  timeline: string;
-  brief: string;
   fullName: string;
   company: string;
   phone: string;
@@ -132,15 +164,7 @@ type ContactFormState = {
   marketingConsent: boolean;
 };
 
-const CONTACT_STEPS = ["Bisogni", "Progetto", "Dati"];
-const CONTACT_NEEDS = ["Branding", "Sviluppo Web", "App Mobile", "Digital Marketing", "SEO", "E-commerce"];
-
 const INITIAL_CONTACT_FORM: ContactFormState = {
-  needs: [],
-  goal: "",
-  budget: "",
-  timeline: "",
-  brief: "",
   fullName: "",
   company: "",
   phone: "",
@@ -164,156 +188,6 @@ function useMediaQuery(query: string) {
   }, [matches, query]);
 
   return matches;
-}
-
-// --- BACKGROUND COMPONENTS ---
-
-function BackgroundVisuals({ activeSection, subIndex }: { activeSection: string; subIndex: number }) {
-  const allRings = [svgPaths.p35cefec0, svgPaths.p123eec00, svgPaths.p20d0c00, svgPaths.p34105380];
-  
-  // Usiamo solo i 2 anelli più grandi (indici 2 e 3)
-  const targetRings = [allRings[2], allRings[3]];
-
-  // Assegniamo casualmente un anello specifico a ciascuna sezione
-  const sectionRingMap = useMemo(() => {
-    const getRandomRing = () => targetRings[Math.floor(Math.random() * targetRings.length)];
-    return {
-      "chi-siamo": getRandomRing(),
-      "servizi": getRandomRing(),
-      "progetti": getRandomRing(),
-    };
-  }, []);
-
-  const currentFillPath = sectionRingMap[activeSection as keyof typeof sectionRingMap] || targetRings[2];
-  
-  // Pattern ID dinamico per i servizi basato su subIndex
-  const getPatternId = () => {
-    if (activeSection === "servizi") {
-      return `pattern-servizi-${subIndex}`;
-    }
-    return `pattern-${activeSection}`;
-  };
-
-  return (
-    <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] lg:left-auto lg:right-[15vw] lg:w-[946px] lg:h-[946px] lg:translate-x-0 pointer-events-none z-0 transition-all duration-500">
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1262 1262" fill="none">
-        <defs>
-          {/* 
-             Ripristino configurazione originale userSpaceOnUse.
-             Le immagini sono definite globalmente (1262x1262) e ruotate intorno al centro (631, 631).
-             L'anello funge da maschera/finestra fissa su questa immagine statica.
-          */}
-          <pattern id="pattern-chi-siamo" patternUnits="userSpaceOnUse" width="1262" height="1262">
-            <image 
-              href={imgEllipse6} 
-              x="0" y="0" width="1262" height="1262" 
-              preserveAspectRatio="xMidYMid slice"
-              transform="rotate(321.358, 631, 631)" 
-            />
-          </pattern>
-
-          {/* Pattern multipli per i servizi */}
-          <pattern id="pattern-servizi-0" patternUnits="userSpaceOnUse" width="1262" height="1262">
-            <image 
-              href={imgEllipse4} 
-              x="0" y="0" width="1262" height="1262"
-              preserveAspectRatio="xMidYMid slice"
-              transform="rotate(5.589, 631, 631)" 
-            />
-          </pattern>
-
-          <pattern id="pattern-servizi-1" patternUnits="userSpaceOnUse" width="1262" height="1262">
-            <image 
-              href={imgEllipse6} 
-              x="0" y="0" width="1262" height="1262"
-              preserveAspectRatio="xMidYMid slice"
-              transform="rotate(45, 631, 631)" 
-            />
-          </pattern>
-
-          <pattern id="pattern-servizi-2" patternUnits="userSpaceOnUse" width="1262" height="1262">
-            <image 
-              href={imgEllipse7} 
-              x="0" y="0" width="1262" height="1262"
-              preserveAspectRatio="xMidYMid slice"
-              transform="rotate(90, 631, 631)" 
-            />
-          </pattern>
-
-          <pattern id="pattern-servizi-3" patternUnits="userSpaceOnUse" width="1262" height="1262">
-            <image 
-              href={imgEllipse4} 
-              x="0" y="0" width="1262" height="1262"
-              preserveAspectRatio="xMidYMid slice"
-              transform="rotate(180, 631, 631)" 
-            />
-          </pattern>
-
-          <pattern id="pattern-servizi-4" patternUnits="userSpaceOnUse" width="1262" height="1262">
-            <image 
-              href={imgEllipse6} 
-              x="0" y="0" width="1262" height="1262"
-              preserveAspectRatio="xMidYMid slice"
-              transform="rotate(270, 631, 631)" 
-            />
-          </pattern>
-
-          <pattern id="pattern-progetti" patternUnits="userSpaceOnUse" width="1262" height="1262">
-            <image 
-              href={imgEllipse7} 
-              x="0" y="0" width="1262" height="1262"
-              preserveAspectRatio="xMidYMid slice"
-              transform="rotate(321.358, 631, 631)" 
-            />
-          </pattern>
-        </defs>
-
-        {/* Anello con Fill (Immagine mascherata dalla forma dell'anello) */}
-        <AnimatePresence mode="wait">
-          {activeSection !== "mission" && activeSection !== "contattaci" && (
-             <motion.path
-               key={`fill-${activeSection}-${activeSection === "servizi" ? subIndex : 0}`}
-               d={currentFillPath}
-               fill={`url(#${getPatternId()})`}
-               stroke="none"
-               initial={{ opacity: 0, scale: 0.95 }}
-               animate={{ opacity: 1, scale: 1 }}
-               exit={{ opacity: 0, scale: 1.05 }}
-               transition={{ duration: 0.6, ease: "easeInOut" }}
-             />
-          )}
-        </AnimatePresence>
-
-        {/* Onde (Stroke Rings) */}
-        <g id="Group 4">
-          {[
-            { d: allRings[0], w: 5.63, maxW: 9, delay: 0 },
-            { d: allRings[1], w: 9.56, maxW: 13, delay: 0.6 },
-            { d: allRings[2], w: 13.53, maxW: 17, delay: 1.2 },
-            { d: allRings[3], w: 20.2, maxW: 25, delay: 1.8 },
-          ].map((path, i) => (
-            <motion.path
-              key={i}
-              d={path.d}
-              fill="none" 
-              stroke="var(--stroke-0, #D9D9D9)"
-              initial={{ strokeOpacity: 0.1, strokeWidth: path.w }}
-              animate={{
-                strokeOpacity: [0.1, 0.5, 0.1],
-                strokeWidth: [path.w, path.maxW, path.w],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                delay: path.delay,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
-        </g>
-      </svg>
-    </div>
-  );
 }
 
 // --- DYNAMIC HEADER / LOGO COMPONENT ---
@@ -380,7 +254,7 @@ function DynamicHeader({ activeSection, children }: { activeSection: string; chi
                         <p className="text-[#101010] m-0">
                             <span className="font-bold bg-clip-text text-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]">10 </span>
                             <span className="font-bold bg-clip-text text-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]">anni</span>
-                            <span className="hidden md:inline"> di attività</span>
+                            <span className="hidden md:inline"> di attivitÃ </span>
                         </p>
                       </div>
                       {activeSection !== "chi-siamo" && isDesktop && ( 
@@ -390,13 +264,6 @@ function DynamicHeader({ activeSection, children }: { activeSection: string; chi
                                     <span className="font-bold bg-clip-text text-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]">+2000 ore</span>
                                     <span className="text-[#d9d9d9]"> </span>
                                     <span className="text-[#101010]">di analisi</span>
-                                </p>
-                             )}
-                             {activeSection === "progetti" && (
-                                <p className="m-0">
-                                    <span className="font-bold bg-clip-text text-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]">+80 progetti</span>
-                                    <span className="text-[#d9d9d9]"> </span>
-                                    <span className="text-[#101010]">di successo</span>
                                 </p>
                              )}
                           </div>
@@ -447,7 +314,6 @@ function Navigation({ activeSection, onNavigate, mobileEmbed, desktopOnly }: { a
     { id: "mission", label: "Mission" },
     { id: "chi-siamo", label: "Chi siamo" },
     { id: "servizi", label: "Servizi" },
-    { id: "progetti", label: "Progetti" },
     { id: "contattaci", label: "CONTATTACI", isContact: true },
   ];
 
@@ -459,7 +325,7 @@ function Navigation({ activeSection, onNavigate, mobileEmbed, desktopOnly }: { a
   };
 
   if (isMobile && !mobileEmbed) {
-    // Non mostrare nulla: la versione mobile ora è gestita come children del logo
+    // Non mostrare nulla: la versione mobile ora Ã¨ gestita come children del logo
     return null;
   }
 
@@ -766,296 +632,10 @@ function RotatingKeywords() {
   );
 }
 
-function ProjectsListOverlay({
-  isOpen,
-  onClose,
-  activeProjectId,
-  onSelectProject,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  activeProjectId: string;
-  onSelectProject: (index: number) => void;
-}) {
-  const isMobile = useMediaQuery("(max-width: 767px)");
-  const [openCategories, setOpenCategories] = useState<string[]>(["Packaging", "BTL & ATL"]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const activeCategory =
-      FEATURED_PROJECTS.find((project) => project.id === activeProjectId)?.category ?? "Packaging";
-
-    setOpenCategories((prev) => (prev.includes(activeCategory) ? prev : [...prev, activeCategory]));
-  }, [activeProjectId, isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
-
-  const toggleCategory = (label: string) => {
-    setOpenCategories((prev) =>
-      prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label],
-    );
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        width: "100%",
-        height: "100%",
-        backgroundColor: "#d7d0c6",
-        zIndex: 999999,
-        pointerEvents: "auto",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      {/* Header: title left, close button right */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: isMobile ? "24px 20px" : "32px 40px",
-          borderBottom: "1px solid rgba(0, 0, 0, 0.05)",
-        }}
-      >
-        <h2 style={{ fontSize: isMobile ? "36px" : "42px", fontWeight: 500, color: "#7d7b79", margin: 0 }}>
-          Lista progetti
-        </h2>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Chiudi lista progetti"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "48px",
-            height: "48px",
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            color: "#d72488",
-            transition: "opacity 0.2s",
-            flexShrink: 0,
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.7")}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-        >
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-            <path d="M5 5L19 19" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-            <path d="M19 5L5 19" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Content centered */}
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "auto",
-          padding: isMobile ? "20px" : "40px",
-        }}
-      >
-        <div style={{ width: "100%" }}>
-          {isMobile ? (
-            // MOBILE: centered content
-            <div style={{ textAlign: "center" }}>
-              <div style={{ textAlign: "left" }}>
-                {PROJECT_LIST_CATEGORIES.map((category) => {
-                  const isExpanded = openCategories.includes(category.label);
-
-                  return (
-                    <div key={category.label} style={{ marginBottom: "40px" }}>
-                      <button
-                        type="button"
-                        onClick={() => toggleCategory(category.label)}
-                        style={{
-                          background: "transparent",
-                          border: "none",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                          marginBottom: "16px",
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: "32px",
-                            fontWeight: "bold",
-                            color: "transparent",
-                            WebkitTextStroke: "1px #d72488",
-                            textTransform: "uppercase",
-                            lineHeight: 1,
-                          }}
-                        >
-                          {category.label}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: "26px",
-                            fontWeight: "bold",
-                            color: "transparent",
-                            WebkitTextStroke: "1px #d72488",
-                            textTransform: "uppercase",
-                            lineHeight: 1,
-                          }}
-                        >
-                          {isExpanded ? "−" : "+"}
-                        </span>
-                      </button>
-
-                      {isExpanded && (
-                        <div style={{ paddingLeft: "56px", display: "flex", flexDirection: "column", gap: "20px" }}>
-                          {category.items.map((item) => (
-                            <button
-                              key={item.id}
-                              type="button"
-                              onClick={() => {
-                                if (typeof item.featuredIndex === "number") {
-                                  onSelectProject(item.featuredIndex);
-                                }
-                                onClose();
-                              }}
-                              style={{
-                                background: "transparent",
-                                border: "none",
-                                cursor: "pointer",
-                                fontSize: "34px",
-                                fontWeight: "bold",
-                                color: "#d72488",
-                                textAlign: "left",
-                                transition: "opacity 0.2s",
-                              }}
-                              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
-                              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-                            >
-                              {item.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ) : (
-            // DESKTOP: centered accordion
-            <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "42px" }}>
-                {PROJECT_LIST_CATEGORIES.map((category) => {
-                  const isExpanded = openCategories.includes(category.label);
-
-                  return (
-                    <div key={category.label}>
-                      <button
-                        type="button"
-                        onClick={() => toggleCategory(category.label)}
-                        style={{
-                          background: "transparent",
-                          border: "none",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "14px",
-                          marginBottom: isExpanded ? "18px" : 0,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: "32px",
-                            fontWeight: "bold",
-                            color: "transparent",
-                            WebkitTextStroke: "1px #d72488",
-                            textTransform: "uppercase",
-                            lineHeight: 1,
-                          }}
-                        >
-                          {category.label}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: "26px",
-                            fontWeight: "bold",
-                            color: "transparent",
-                            WebkitTextStroke: "1px #d72488",
-                            textTransform: "uppercase",
-                            lineHeight: 1,
-                          }}
-                        >
-                          {isExpanded ? "−" : "+"}
-                        </span>
-                      </button>
-
-                      {isExpanded && (
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "40px", paddingLeft: "32px" }}>
-                          {category.items.map((item) => (
-                            <button
-                              key={item.id}
-                              type="button"
-                              onClick={() => {
-                                if (typeof item.featuredIndex === "number") {
-                                  onSelectProject(item.featuredIndex);
-                                }
-                                onClose();
-                              }}
-                              style={{
-                                background: "transparent",
-                                border: "none",
-                                cursor: "pointer",
-                                fontSize: "32px",
-                                fontWeight: "bold",
-                                color: "#d72488",
-                                transition: "opacity 0.2s",
-                              }}
-                              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
-                              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-                            >
-                              {item.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function ContactWizardSection() {
   const [contactForm, setContactForm] = useState<ContactFormState>(INITIAL_CONTACT_FORM);
-  const [contactStep, setContactStep] = useState(1);
   const [contactFeedback, setContactFeedback] = useState("");
   const [contactSubmitted, setContactSubmitted] = useState(false);
-  const [hoveredNeed, setHoveredNeed] = useState<string | null>(null);
-  const [hoveredBudget, setHoveredBudget] = useState<string | null>(null);
-  const [hoveredTimeline, setHoveredTimeline] = useState<string | null>(null);
 
   const handleContactInputChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const target = event.target;
@@ -1066,27 +646,7 @@ function ContactWizardSection() {
     if (contactFeedback) setContactFeedback("");
   };
 
-  const handleNeedToggle = (need: string) => {
-    setContactForm((prev) => {
-      const selected = prev.needs.includes(need);
-      return {
-        ...prev,
-        needs: selected ? prev.needs.filter((n) => n !== need) : [...prev.needs, need],
-      };
-    });
-    if (contactFeedback) setContactFeedback("");
-  };
-
-  const validateStep = (step: number) => {
-    if (step === 1) {
-      if (contactForm.needs.length === 0) return "Seleziona almeno un bisogno.";
-      if (!contactForm.goal.trim()) return "Inserisci l'obiettivo principale.";
-      return "";
-    }
-    if (step === 2) {
-      if (!contactForm.brief.trim()) return "Aggiungi un breve contesto del progetto.";
-      return "";
-    }
+  const validateForm = () => {
     if (!contactForm.fullName.trim()) return "Inserisci nome e cognome.";
     if (!contactForm.phone.trim()) return "Inserisci il telefono diretto.";
     if (!contactForm.email.trim()) return "Inserisci l'email diretta.";
@@ -1094,31 +654,15 @@ function ContactWizardSection() {
     return "";
   };
 
-  const handleNextContactStep = () => {
-    const msg = validateStep(contactStep);
-    if (msg) {
-      setContactFeedback(msg);
-      return;
-    }
-    setContactStep((prev) => Math.min(prev + 1, CONTACT_STEPS.length));
-    setContactFeedback("");
-  };
-
-  const handlePrevContactStep = () => {
-    setContactStep((prev) => Math.max(prev - 1, 1));
-    setContactFeedback("");
-  };
-
   const handleContactSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const msg = validateStep(CONTACT_STEPS.length);
+    const msg = validateForm();
     if (msg) {
       setContactFeedback(msg);
       return;
     }
     setContactSubmitted(true);
     setContactForm(INITIAL_CONTACT_FORM);
-    setContactStep(1);
     setContactFeedback("");
   };
 
@@ -1187,49 +731,7 @@ function ContactWizardSection() {
               PARLACI DEL TUO PROGETTO
             </motion.h1>
 
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="flex justify-center gap-3 mb-2"
-            >
-              {[1, 2, 3].map((step) => (
-                <div
-                  key={step}
-                  className={`h-1.5 rounded-full transition-all duration-500 ${
-                    step === contactStep
-                      ? "w-16 bg-gradient-to-r from-[#de5ca1] to-[#76b729]"
-                      : step < contactStep
-                      ? "w-8 bg-[#76b729]"
-                      : "w-8 bg-[#d9d9d9]"
-                  }`}
-                  style={{
-                    height: "6px",
-                    borderRadius: "999px",
-                    width: step === contactStep ? "64px" : "32px",
-                    background:
-                      step === contactStep
-                        ? "linear-gradient(to right, #de5ca1, #76b729)"
-                        : step < contactStep
-                        ? "#76b729"
-                        : "#d9d9d9",
-                    transition: "all 0.5s ease",
-                  }}
-                />
-              ))}
-            </motion.div>
 
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="text-sm uppercase tracking-widest text-[#101010]/50 font-medium"
-              style={{ fontSize: "14px", textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(16,16,16,0.5)", fontWeight: 500 }}
-            >
-              {contactStep === 1 && "1. Bisogni"}
-              {contactStep === 2 && "2. Progetto"}
-              {contactStep === 3 && "3. Dati"}
-            </motion.p>
           </div>
 
           {contactSubmitted ? (
@@ -1247,13 +749,12 @@ function ContactWizardSection() {
                 Richiesta inviata.
               </p>
               <p className="mt-4 max-w-md text-[16px] md:text-[18px] text-[#101010]/60">
-                Il nostro team analizzerà la tua richiesta e ti contatterà entro 24 ore lavorative.
+                Il nostro team analizzerÃ  la tua richiesta e ti contatterÃ  entro 24 ore lavorative.
               </p>
               <button
                 type="button"
                 onClick={() => {
                   setContactSubmitted(false);
-                  setContactStep(1);
                 }}
                 className="mt-10 rounded-full bg-[#101010]/5 px-8 py-3 text-[14px] font-bold text-[#101010] transition-all hover:bg-[#101010]/10"
               >
@@ -1263,253 +764,7 @@ function ContactWizardSection() {
           ) : (
             <form onSubmit={handleContactSubmit} style={{ maxWidth: "760px", margin: "0 auto" }}>
               <AnimatePresence mode="wait">
-                {contactStep === 1 && (
-                  <motion.div
-                    key="step1"
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    className="space-y-8"
-                    style={{ display: "flex", flexDirection: "column", gap: "44px" }}
-                  >
-                    <motion.div variants={itemVariants}>
-                      <label className="mb-4 block text-sm font-semibold uppercase tracking-widest text-[#101010]/60" style={{ marginBottom: "14px", display: "block", fontSize: "13px", letterSpacing: "0.14em", color: "#616773", fontWeight: 700 }}>
-                        DI COSA HAI BISOGNO?
-                      </label>
-                      <div className="grid grid-cols-3 gap-3" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "14px", marginBottom: "12px" }}>
-                        {CONTACT_NEEDS.map((service) => {
-                          const isSelected = contactForm.needs.includes(service);
-                          const isHovered = hoveredNeed === service;
-                          return (
-                            <button
-                              key={service}
-                              type="button"
-                              onClick={() => handleNeedToggle(service)}
-                              onMouseEnter={() => setHoveredNeed(service)}
-                              onMouseLeave={() => setHoveredNeed(null)}
-                              className={`px-6 py-3 rounded-full border-2 transition-all duration-300 font-medium ${
-                                isSelected
-                                  ? "border-transparent bg-gradient-to-r from-[#de5ca1] to-[#76b729] text-white shadow-lg scale-105"
-                                  : "border-[#d9d9d9] text-[#101010]"
-                              }`}
-                              style={{
-                                padding: "13px 20px",
-                                borderRadius: "999px",
-                                border: isSelected ? "2px solid transparent" : `2px solid ${isHovered ? "#de5ca1" : "#d9d9d9"}`,
-                                background: isSelected
-                                  ? "linear-gradient(to right, #de5ca1, #76b729)"
-                                  : isHovered
-                                  ? "rgba(255,255,255,0.85)"
-                                  : "transparent",
-                                color: isSelected ? "#fff" : isHovered ? "#d72488" : "#101010",
-                                fontWeight: 500,
-                                fontSize: "15px",
-                                lineHeight: 1.15,
-                                transform: isSelected ? "scale(1.05)" : isHovered ? "scale(1.02)" : "scale(1)",
-                                boxShadow: isSelected
-                                  ? "0 10px 24px -10px rgba(217,96,155,0.7)"
-                                  : isHovered
-                                  ? "0 8px 20px -12px rgba(16,16,16,0.25)"
-                                  : "none",
-                                transition: "all 0.25s ease",
-                                minHeight: "50px",
-                                cursor: "pointer",
-                              }}
-                            >
-                              {service}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </motion.div>
-
-                    <motion.div variants={itemVariants}>
-                      <label
-                        htmlFor="goal"
-                        className="mb-3 block text-sm font-semibold uppercase tracking-widest text-[#101010]/60"
-                        style={{ marginBottom: "14px", display: "block", fontSize: "13px", letterSpacing: "0.14em", color: "#616773", fontWeight: 700 }}
-                      >
-                        OBIETTIVO PRINCIPALE DEL PROGETTO
-                      </label>
-                      <input
-                        id="goal"
-                        name="goal"
-                        type="text"
-                        value={contactForm.goal}
-                        onChange={handleContactInputChange}
-                        placeholder="Es. Aumentare le vendite online del 30%"
-                        className="w-full border-b-2 border-[#d9d9d9] bg-transparent py-3 text-[20px] text-[#101010] outline-none transition-colors duration-300 placeholder:text-[#101010]/30 focus:border-[#de5ca1]"
-                        style={{
-                          width: "100%",
-                          background: "transparent",
-                          border: "none",
-                          borderBottom: "2px solid #d9d9d9",
-                          padding: "14px 0 10px",
-                          fontSize: "20px",
-                          color: "#101010",
-                          outline: "none",
-                        }}
-                      />
-                    </motion.div>
-                  </motion.div>
-                )}
-
-                {contactStep === 2 && (
-                  <motion.div
-                    key="step2"
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    className="space-y-8"
-                    style={{ display: "flex", flexDirection: "column", gap: "44px" }}
-                  >
-                    <motion.div variants={itemVariants}>
-                      <label className="mb-4 block text-sm font-semibold uppercase tracking-widest text-[#101010]/60" style={{ marginBottom: "14px", display: "block", fontSize: "13px", letterSpacing: "0.14em", color: "#616773", fontWeight: 700 }}>
-                        BUDGET
-                      </label>
-                      <div className="flex flex-wrap gap-3" style={{ display: "flex", flexWrap: "wrap", gap: "14px" }}>
-                        {[
-                          { label: "Sotto 10k", value: "<10k" },
-                          { label: "10k-25k", value: "10k-25k" },
-                          { label: "25k-50k", value: "25k-50k" },
-                          { label: "Oltre 50k", value: ">50k" },
-                        ].map((budget) => {
-                          const isSelected = contactForm.budget === budget.value;
-                          const isHovered = hoveredBudget === budget.value;
-
-                          return (
-                            <button
-                              key={budget.value}
-                              type="button"
-                              onClick={() => setContactForm({ ...contactForm, budget: budget.value })}
-                              onMouseEnter={() => setHoveredBudget(budget.value)}
-                              onMouseLeave={() => setHoveredBudget(null)}
-                              className={`px-6 py-3 rounded-full border-2 transition-all duration-300 font-medium ${
-                                isSelected
-                                  ? "border-transparent bg-gradient-to-r from-[#de5ca1] to-[#76b729] text-white shadow-lg scale-105"
-                                  : "border-[#d9d9d9] text-[#101010]"
-                              }`}
-                              style={{
-                                padding: "13px 20px",
-                                borderRadius: "999px",
-                                border: isSelected ? "2px solid transparent" : `2px solid ${isHovered ? "#de5ca1" : "#d9d9d9"}`,
-                                background: isSelected
-                                  ? "linear-gradient(to right, #de5ca1, #76b729)"
-                                  : isHovered
-                                  ? "rgba(255,255,255,0.85)"
-                                  : "transparent",
-                                color: isSelected ? "#fff" : isHovered ? "#d72488" : "#101010",
-                                fontWeight: 500,
-                                fontSize: "15px",
-                                lineHeight: 1.15,
-                                transform: isSelected ? "scale(1.05)" : isHovered ? "scale(1.02)" : "scale(1)",
-                                boxShadow: isSelected
-                                  ? "0 10px 24px -10px rgba(217,96,155,0.7)"
-                                  : isHovered
-                                  ? "0 8px 20px -12px rgba(16,16,16,0.25)"
-                                  : "none",
-                                transition: "all 300ms ease",
-                                cursor: "pointer",
-                              }}
-                            >
-                              {budget.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </motion.div>
-
-                    <motion.div variants={itemVariants}>
-                      <label className="mb-4 block text-sm font-semibold uppercase tracking-widest text-[#101010]/60" style={{ marginBottom: "14px", display: "block", fontSize: "13px", letterSpacing: "0.14em", color: "#616773", fontWeight: 700 }}>
-                        TEMPISTICHE
-                      </label>
-                      <div className="flex flex-wrap gap-3" style={{ display: "flex", flexWrap: "wrap", gap: "14px" }}>
-                        {[
-                          { label: "Subito", value: "subito" },
-                          { label: "1-2 mesi", value: "1-2 mesi" },
-                          { label: "3-6 mesi", value: "3-6 mesi" },
-                          { label: "Senza fretta", value: "flessibile" },
-                        ].map((timeline) => {
-                          const isSelected = contactForm.timeline === timeline.value;
-                          const isHovered = hoveredTimeline === timeline.value;
-
-                          return (
-                            <button
-                              key={timeline.value}
-                              type="button"
-                              onClick={() => setContactForm({ ...contactForm, timeline: timeline.value })}
-                              onMouseEnter={() => setHoveredTimeline(timeline.value)}
-                              onMouseLeave={() => setHoveredTimeline(null)}
-                              className={`px-6 py-3 rounded-full border-2 transition-all duration-300 font-medium ${
-                                isSelected
-                                  ? "border-transparent bg-gradient-to-r from-[#de5ca1] to-[#76b729] text-white shadow-lg scale-105"
-                                  : "border-[#d9d9d9] text-[#101010]"
-                              }`}
-                              style={{
-                                padding: "13px 20px",
-                                borderRadius: "999px",
-                                border: isSelected ? "2px solid transparent" : `2px solid ${isHovered ? "#de5ca1" : "#d9d9d9"}`,
-                                background: isSelected
-                                  ? "linear-gradient(to right, #de5ca1, #76b729)"
-                                  : isHovered
-                                  ? "rgba(255,255,255,0.85)"
-                                  : "transparent",
-                                color: isSelected ? "#fff" : isHovered ? "#d72488" : "#101010",
-                                fontWeight: 500,
-                                fontSize: "15px",
-                                lineHeight: 1.15,
-                                transform: isSelected ? "scale(1.05)" : isHovered ? "scale(1.02)" : "scale(1)",
-                                boxShadow: isSelected
-                                  ? "0 10px 24px -10px rgba(217,96,155,0.7)"
-                                  : isHovered
-                                  ? "0 8px 20px -12px rgba(16,16,16,0.25)"
-                                  : "none",
-                                transition: "all 300ms ease",
-                                cursor: "pointer",
-                              }}
-                            >
-                              {timeline.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </motion.div>
-
-                    <motion.div variants={itemVariants}>
-                      <label
-                        htmlFor="brief"
-                        className="mb-3 block text-sm font-semibold uppercase tracking-widest text-[#101010]/60"
-                        style={{ marginBottom: "14px", display: "block", fontSize: "13px", letterSpacing: "0.14em", color: "#616773", fontWeight: 700 }}
-                      >
-                        BRIEF (CONTESTO, TARGET E FUNZIONALITA)
-                      </label>
-                      <textarea
-                        id="brief"
-                        name="brief"
-                        value={contactForm.brief}
-                        onChange={handleContactInputChange}
-                        placeholder="Raccontaci il tuo progetto..."
-                        rows={4}
-                        className="w-full resize-none rounded-2xl border-2 border-[#d9d9d9] bg-transparent px-5 py-4 text-[18px] text-[#101010] outline-none transition-colors duration-300 placeholder:text-[#101010]/30 focus:border-[#de5ca1]"
-                        style={{
-                          width: "100%",
-                          minHeight: "136px",
-                          borderRadius: "18px",
-                          border: "2px solid #d9d9d9",
-                          background: "transparent",
-                          padding: "16px 18px",
-                          fontSize: "18px",
-                          color: "#101010",
-                          outline: "none",
-                        }}
-                      />
-                    </motion.div>
-                  </motion.div>
-                )}
-
-                {contactStep === 3 && (
+                {(
                   <motion.div
                     key="step3"
                     variants={containerVariants}
@@ -1639,7 +894,7 @@ function ContactWizardSection() {
                           )}
                         </div>
                         <span className="text-[15px] leading-relaxed text-[#101010]">
-                          Acconsento al trattamento dei dati per finalità di marketing
+                          Acconsento al trattamento dei dati per finalitÃ  di marketing
                         </span>
                       </label>
                     </motion.div>
@@ -1655,42 +910,12 @@ function ContactWizardSection() {
                 style={{ marginTop: "58px", display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "6px" }}
               >
                 <div className="flex items-center gap-4">
-                  {contactStep > 1 ? (
-                    <button
-                      type="button"
-                      onClick={handlePrevContactStep}
-                      className="px-8 py-3 font-semibold text-[#101010] transition-colors duration-300 hover:text-[#de5ca1]"
-                    >
-                      ← Indietro
-                    </button>
-                  ) : null}
                   {contactFeedback && <span className="text-[12px] font-bold text-[#de5ca1]">{contactFeedback}</span>}
                 </div>
 
                 <div className="flex-1" />
 
-                {contactStep < 3 ? (
-                  <button
-                    type="button"
-                    onClick={handleNextContactStep}
-                    className="group relative overflow-hidden rounded-full px-10 py-4 text-[18px] font-black text-white transition-all duration-300 hover:scale-105 hover:shadow-xl"
-                    style={{
-                      position: "relative",
-                      overflow: "hidden",
-                      borderRadius: "999px",
-                      padding: "16px 40px",
-                      fontSize: "18px",
-                      fontWeight: 900,
-                      color: "#fff",
-                      background: "linear-gradient(to right, #de5ca1, #76b729)",
-                      border: "none",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <span className="relative">Avanti →</span>
-                  </button>
-                ) : (
-                  <button
+                <button
                     type="submit"
                     disabled={!contactForm.privacyConsent}
                     className="group relative overflow-hidden rounded-full px-10 py-4 text-[18px] font-black text-white transition-all duration-300 hover:scale-105 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
@@ -1699,7 +924,6 @@ function ContactWizardSection() {
                     <div className="absolute inset-0 bg-gradient-to-r from-[#76b729] to-[#de5ca1] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                     <span className="relative">Invia Progetto</span>
                   </button>
-                )}
               </motion.div>
             </form>
           )}
@@ -1714,13 +938,18 @@ function ContentRenderer({
   activeSection,
   subIndex,
   setSubIndex,
+  onViewProjects,
 }: {
   activeSection: SectionId;
   subIndex: number;
   setSubIndex: (i: number) => void;
+  onViewProjects?: (category?: string) => void;
 }) {
   const isDesktop = useMediaQuery("(min-width: 1024px)");
-  const activeProject = FEATURED_PROJECTS[subIndex] ?? FEATURED_PROJECTS[0];
+
+  const getProjectsHref = () => {
+    return getProjectsRoute(undefined, DEFAULT_PROJECT_ID);
+  };
   
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -1751,6 +980,8 @@ function ContentRenderer({
     animate: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
     exit: { opacity: 0, y: -50, transition: { duration: 0.6, ease: "easeIn" } }
   };
+
+  const safeChiSiamoIndex = Math.min(Math.max(subIndex, 0), CHI_SIAMO_SLIDES.length - 1);
 
   return (
     <AnimatePresence mode="wait">
@@ -1784,7 +1015,7 @@ function ContentRenderer({
                  <p className="text-[32px] md:text-[48px]">
                     <span className="font-bold bg-clip-text text-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]">10 </span>
                     <span className="font-bold bg-clip-text text-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]">anni</span>
-                    <span> di attività</span>
+                    <span> di attivitÃ </span>
                  </p>
                  {/* Sottotitolo narrativo */}
                  <motion.p 
@@ -1793,7 +1024,7 @@ function ContentRenderer({
                     transition={{ delay: 5.5, duration: 1 }}
                     className="text-[16px] md:text-[18px] text-[#101010] mt-4 max-w-[300px] md:max-w-[500px] leading-relaxed"
                  >
-                    Costruiamo identità chiare, coerenti, riconoscibili. Brand che parlano con una voce sola, ovunque.
+                    Costruiamo identitÃ  chiare, coerenti, riconoscibili. Brand che parlano con una voce sola, ovunque.
                     <br /><br />
                     Niente fronzoli, niente mode passeggere: solo fondamenta solide e scelte che reggono nel tempo.
                     <br /><br />
@@ -1813,44 +1044,48 @@ function ContentRenderer({
           exit="exit"
           className="absolute inset-0 pointer-events-none"
         >
-           {/* Testo Lungo Centrale con Sub-Slides */}
-           {/* Mobile/Tablet: In basso (bottom-10), Desktop (LG): Centrato verticalmente un po' più su (top-40%) */}
-           <div className="absolute left-5 right-5 bottom-10 lg:bottom-auto lg:left-[200px] lg:right-[200px] lg:top-[40%] lg:-translate-y-1/2 flex items-start justify-between gap-4 pointer-events-auto">
-             
-             {/* Text Box Container */}
-             <div className="relative w-full lg:max-w-[865px] min-h-[200px] lg:min-h-[200px]">
-               <AnimatePresence mode="wait">
-                 <motion.div
-                   key={subIndex}
-                   variants={slideVariants}
-                   initial="initial"
-                   animate="animate"
-                   exit="exit"
-                   className="bg-[#e3ddd3] px-[20px] py-[20px] lg:px-[31px] lg:py-[30px] w-full"
-                 >
-                    <p className="font-normal text-[#101010] text-[16px] leading-[24px] lg:text-[18px] lg:leading-[28px]">
-                       <span>{CHI_SIAMO_SLIDES[subIndex].text}{" "}</span>
-                       <span className="font-bold">{CHI_SIAMO_SLIDES[subIndex].highlight.split(",")[0]}</span>
-                       <span>{CHI_SIAMO_SLIDES[subIndex].highlight.substring(CHI_SIAMO_SLIDES[subIndex].highlight.split(",")[0].length)}</span>
-                    </p>
-                 </motion.div>
-               </AnimatePresence>
-             </div>
+           <div className="absolute left-5 top-1/2 z-20 -translate-y-1/2 pointer-events-auto md:left-[200px]">
+             <div className="flex items-center gap-4 md:gap-6">
+               <div className="flex shrink-0 flex-col gap-3 md:gap-4">
+                  {CHI_SIAMO_SLIDES.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSubIndex(idx)}
+                      className={`size-[16px] md:size-[22px] rounded-full transition-all duration-300 border ${
+                          safeChiSiamoIndex === idx
+                          ? "border-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]"
+                          : "border-[#d9609b] bg-transparent opacity-50 hover:opacity-100"
+                      }`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+               </div>
 
-             {/* Side Navigation Buttons */}
-             <div className="flex flex-col gap-4 pt-4 shrink-0">
-                {CHI_SIAMO_SLIDES.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSubIndex(idx)}
-                    className={`size-[18px] lg:size-[24px] rounded-full transition-all duration-300 border ${
-                        subIndex === idx 
-                        ? "border-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]" 
-                        : "border-[#d9609b] bg-transparent opacity-50 hover:opacity-100"
-                    }`}
-                    aria-label={`Go to slide ${idx + 1}`}
-                  />
-                ))}
+               <div
+                 className="w-full max-w-[320px] md:max-w-[340px] lg:max-w-[360px]"
+                 style={{ width: "360px", maxWidth: "calc(100vw - 120px)" }}
+               >
+                 <AnimatePresence mode="wait">
+                   <motion.div
+                     key={safeChiSiamoIndex}
+                     variants={slideVariants}
+                     initial="initial"
+                     animate="animate"
+                     exit="exit"
+                     className="flex min-h-[220px] max-w-full items-center md:min-h-[260px]"
+                     style={{ width: "100%", maxWidth: "360px" }}
+                   >
+                      <p
+                        className="max-w-full font-normal text-[#101010] text-[16px] leading-[24px] break-words md:text-[18px] md:leading-[28px]"
+                        style={{ width: "100%", maxWidth: "360px" }}
+                      >
+                         <span>{CHI_SIAMO_SLIDES[safeChiSiamoIndex].text}{" "}</span>
+                         <span className="font-bold">{CHI_SIAMO_SLIDES[safeChiSiamoIndex].highlight.split(",")[0]}</span>
+                         <span>{CHI_SIAMO_SLIDES[safeChiSiamoIndex].highlight.substring(CHI_SIAMO_SLIDES[safeChiSiamoIndex].highlight.split(",")[0].length)}</span>
+                      </p>
+                   </motion.div>
+                 </AnimatePresence>
+               </div>
              </div>
            </div>
         </motion.div>
@@ -1863,7 +1098,7 @@ function ContentRenderer({
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="absolute inset-0 pointer-events-none"
+          className="absolute inset-0"
         >
            {/* Dynamic Title based on selection */}
            <motion.div variants={itemVariants} className="absolute left-5 top-[180px] md:left-[200px] md:top-[268px]">
@@ -1905,8 +1140,30 @@ function ContentRenderer({
                 >
                   <motion.div variants={itemVariants} className="absolute left-5 md:left-[200px] top-[240px] md:top-[360px] max-w-[300px] md:max-w-[520px]">
                     <p className="text-[17px] md:text-[19px] leading-[30px] md:leading-[34px] tracking-wide text-[#101010]">
-                      Costruiamo identità chiare, coerenti, riconoscibili. Brand che parlano con una voce sola, ovunque.
+                      Costruiamo identitÃ  chiare, coerenti, riconoscibili. Brand che parlano con una voce sola, ovunque.
                     </p>
+                    {!isDesktop && (
+                      <a
+                        href={getProjectsHref()}
+                        className="group flex w-max items-center mt-16 whitespace-nowrap shrink-0 pointer-events-auto transition-colors duration-300 hover:bg-white"
+                        style={{
+                          padding: "10px 14px",
+                          borderRadius: 999,
+                          border: "1px solid rgba(215, 36, 136, 0.25)",
+                          background: "rgba(255,255,255,0.92)",
+                          color: "#7d7b79",
+                          fontWeight: 700,
+                          fontSize: "16px",
+                          lineHeight: 1,
+                          textDecoration: "none",
+                          whiteSpace: "nowrap",
+                          width: "max-content",
+                          flexWrap: "nowrap",
+                        }}
+                      >
+                        Scopri i progetti
+                      </a>
+                    )}
                   </motion.div>
                   {isDesktop && (
                     <motion.div variants={itemVariants} className="absolute left-[200px] top-[470px] max-w-[520px]">
@@ -1916,13 +1173,33 @@ function ContentRenderer({
                       <p className="font-bold text-[20px] md:text-[24px] leading-[32px] bg-clip-text text-transparent bg-gradient-to-l from-[#de5ca1] to-[#76b729]">
                         Se vuoi sembrare qualcosa, basta poco. Se vuoi essere qualcosa, si lavora sul serio.
                       </p>
+                      <a
+                        href={getProjectsHref()}
+                        className="group flex w-max items-center mt-16 whitespace-nowrap shrink-0 pointer-events-auto transition-colors duration-300 hover:bg-white"
+                        style={{
+                          padding: "10px 14px",
+                          borderRadius: 999,
+                          border: "1px solid rgba(215, 36, 136, 0.25)",
+                          background: "rgba(255,255,255,0.92)",
+                          color: "#7d7b79",
+                          fontWeight: 700,
+                          fontSize: "16px",
+                          lineHeight: 1,
+                          textDecoration: "none",
+                          whiteSpace: "nowrap",
+                          width: "max-content",
+                          flexWrap: "nowrap",
+                        }}
+                      >
+                        Scopri i progetti
+                      </a>
                     </motion.div>
                   )}
                 </motion.div>
               </AnimatePresence>
            )}
            
-           {subIndex !== 0 && ( // Other services - placeholder content
+           {subIndex !== 0 && ( // Other services
               <AnimatePresence mode="wait">
                 <motion.div 
                   key={`service-${subIndex}`}
@@ -1936,71 +1213,59 @@ function ContentRenderer({
                     <p className="font-normal text-[16px] leading-[24px] md:text-[18px] md:leading-[28px] text-[#101010]">
                       Abbiamo accompagnato Pernigotti in un progetto di restyling della storica linea Cacao Gelateria...
                     </p>
+                    {!isDesktop && (
+                      <a
+                        href={getProjectsHref()}
+                        className="group flex w-max items-center mt-16 whitespace-nowrap shrink-0 pointer-events-auto transition-colors duration-300 hover:bg-white"
+                        style={{
+                          padding: "10px 14px",
+                          borderRadius: 999,
+                          border: "1px solid rgba(215, 36, 136, 0.25)",
+                          background: "rgba(255,255,255,0.92)",
+                          color: "#7d7b79",
+                          fontWeight: 700,
+                          fontSize: "16px",
+                          lineHeight: 1,
+                          textDecoration: "none",
+                          whiteSpace: "nowrap",
+                          width: "max-content",
+                          flexWrap: "nowrap",
+                        }}
+                      >
+                        Scopri i progetti
+                      </a>
+                    )}
                   </motion.div>
                   {isDesktop && (
-                    <motion.div variants={itemVariants} className="absolute left-[200px] top-[680px] max-w-[450px]">
+                    <motion.div variants={itemVariants} className="absolute left-[200px] top-[620px] max-w-[450px]">
                       <p className="font-normal text-[18px] leading-[28px] text-[#101010]">
                         Il nuovo design del packaging valorizza l'expertise e la tradizione dolciaria del brand...
                       </p>
+                      <a
+                        href={getProjectsHref()}
+                        className="group flex w-max items-center mt-16 whitespace-nowrap shrink-0 pointer-events-auto transition-colors duration-300 hover:bg-white"
+                        style={{
+                          padding: "10px 14px",
+                          borderRadius: 999,
+                          border: "1px solid rgba(215, 36, 136, 0.25)",
+                          background: "rgba(255,255,255,0.92)",
+                          color: "#7d7b79",
+                          fontWeight: 700,
+                          fontSize: "16px",
+                          lineHeight: 1,
+                          textDecoration: "none",
+                          whiteSpace: "nowrap",
+                          width: "max-content",
+                          flexWrap: "nowrap",
+                        }}
+                      >
+                        Scopri i progetti
+                      </a>
                     </motion.div>
                   )}
                 </motion.div>
               </AnimatePresence>
            )}
-        </motion.div>
-      )}
-
-      {activeSection === "progetti" && (
-        <motion.div
-          key="progetti"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-          className="absolute inset-0 pointer-events-none"
-        >
-            {/* Stats & Title */}
-            <motion.div variants={itemVariants} className="absolute left-5 top-[120px] md:left-[200px] md:top-[200px] flex gap-3 md:gap-6">
-              <p className="font-bold text-[#101010] text-[40px] md:text-[82px]">{activeProject.countLabel}</p>
-              <p className="font-bold text-[#d72488] text-[40px] md:text-[82px]">{activeProject.title}</p>
-            </motion.div>
-            <motion.p variants={itemVariants} className="absolute left-5 top-[180px] md:left-[200px] md:top-[300px] font-bold text-[20px] md:text-[33px] text-[#a3a3a3]">{activeProject.category}</motion.p>
-
-            {/* Feedback Section */}
-            <motion.div variants={itemVariants} className="absolute left-5 right-5 bottom-[180px] md:left-[200px] md:right-auto md:bottom-[180px] md:max-w-[500px]">
-               <p className="font-extralight text-[20px] md:text-[32px]">Feedback</p>
-               <div className="text-[15px] md:text-[17px] leading-[24px] md:leading-[26px] mt-2 md:mt-3">
-                <p>"{activeProject.feedbackQuote}"</p>
-                <p className="mt-2 md:mt-3 text-[14px] md:text-[16px]">{activeProject.feedbackAuthor}</p>
-               </div>
-            </motion.div>
-
-            {/* Carousel Arrows - ancorate al cerchio progetti */}
-            <motion.div
-              variants={itemVariants}
-              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] md:w-[78vw] md:h-[78vw] lg:left-auto lg:right-[15vw] lg:w-[946px] lg:h-[946px] lg:translate-x-0 pointer-events-none"
-              style={{ zIndex: 120 }}
-            >
-              <button
-                onClick={() => setSubIndex((prev) => (prev === 0 ? 4 : prev - 1))}
-                className="absolute left-[-30px] top-[54%] -translate-y-1/2 pointer-events-auto md:left-[-44px] lg:left-[-58px]"
-                aria-label="Progetto precedente"
-              >
-                <svg className="block h-auto w-[64px] md:w-[82px] lg:w-[120px]" fill="none" viewBox="0 0 220 283">
-                  <path d="M110.5 4.50032C110.5 4.50032 2.44484 84.4306 4.52981 145.255C6.52445 203.443 110.5 278.5 110.5 278.5" stroke="#D72488" strokeLinecap="round" strokeWidth="9" />
-                </svg>
-              </button>
-              <button
-                onClick={() => setSubIndex((prev) => (prev === 4 ? 0 : prev + 1))}
-                className="absolute right-[-30px] top-[54%] -translate-y-1/2 pointer-events-auto md:right-[-44px] lg:right-[-58px]"
-                aria-label="Progetto successivo"
-              >
-                <svg className="block h-auto w-[64px] md:w-[82px] lg:w-[120px]" fill="none" viewBox="0 0 220 283" style={{ transform: "scaleX(-1)" }}>
-                  <path d="M110.5 4.50032C110.5 4.50032 2.44484 84.4306 4.52981 145.255C6.52445 203.443 110.5 278.5 110.5 278.5" stroke="#D72488" strokeLinecap="round" strokeWidth="9" />
-                </svg>
-              </button>
-            </motion.div>
-            
         </motion.div>
       )}
 
@@ -2012,80 +1277,1588 @@ function ContentRenderer({
 }
 
 
+// --- PROJECTS PAGE ---
+
+// Map service names to PROJECT_LIST_CATEGORIES labels
+const SERVICE_TO_CATEGORY: Record<string, string> = {
+  "Brand": "Brand",
+  "Corporate identity": "Brand",
+  "Packaging": "Packaging",
+  "BTL & ATL": "BTL & ATL",
+  "Web": "EVENTS",
+};
+
+const DEFAULT_PROJECT_ID = "pernigotti";
+
+function buildDefaultProjectSections(project: {
+  title: string;
+  category: string;
+  feedbackQuote?: string;
+  feedbackAuthor?: string;
+}): ProjectSection[] {
+  return [
+    {
+      id: "overview",
+      type: "overview",
+      label: "Panoramica",
+      title: `${project.title} / ${project.category}`,
+      body: `Un progetto pensato per rafforzare il posizionamento del brand ${project.title} con una direzione creativa coerente su tutti i touchpoint.`,
+    },
+    {
+      id: "approach",
+      type: "approach",
+      label: "Approccio",
+      title: "Metodo di lavoro",
+      body: "Strategia, concept e sviluppo esecutivo sono stati costruiti in continuita, con un processo iterativo orientato alla qualita percepita e ai risultati di business.",
+    },
+    {
+      id: "results",
+      type: "results",
+      label: "Risultato",
+      title: "Feedback Cliente",
+      body: project.feedbackQuote
+        ? `\"${project.feedbackQuote}\"${project.feedbackAuthor ? ` ${project.feedbackAuthor}` : ""}`
+        : "Il progetto ha migliorato chiarezza, riconoscibilita e coerenza complessiva della comunicazione.",
+    },
+  ];
+}
+
+// Immagine principale assegnata esplicitamente per ogni progetto.
+// Priorita nella visualizzazione: section.image -> project.image -> fallback categoria
+const PROJECT_MAIN_IMAGE_BY_ID: Record<string, string> = {
+  "pernigotti":              imgEllipse7,
+  "sauber-pharma":           imgEllipse4,
+  "suaviter":                imgEllipse6,
+  "packaging-test-alpha":    imgEllipse7,
+  "liabel":                  imgEllipse6,
+  "gotha-cosmetic":          imgEllipse4,
+  "filo-alfa":               imgEllipse7,
+  "brand-lab-test":          imgEllipse4,
+  "unicredit":               imgEllipse6,
+  "sauber-pharma-btl":       imgEllipse4,
+  "piero-trentini":          imgEllipse7,
+  "atl-test-beta":           imgEllipse6,
+  "andrea-pieralli":         imgEllipse4,
+  "italiana-assicurazioni":  imgEllipse7,
+  "nissan":                  imgEllipse6,
+  "event-test-gamma":        imgEllipse4,
+};
+
+const PROJECT_SECTIONS_BY_ID: Record<string, ProjectSection[]> = {
+  "pernigotti": [
+    {
+      id: "overview",
+      type: "overview",
+      label: "Panoramica",
+      title: "Pernigotti / Packaging",
+      body: "Restyling del sistema pack per valorizzare la percezione premium della linea e rafforzare continuita visiva tra i touchpoint a scaffale e comunicazione di marca.",
+      image: imgEllipse7,
+    },
+    {
+      id: "challenge",
+      type: "challenge",
+      label: "Challenge",
+      title: "Obiettivo di progetto",
+      body: "Aumentare riconoscibilita e leggibilita in scaffali ad alta densita, senza perdere il capitale iconico storico del brand.",
+      image: imgEllipse7,
+    },
+    {
+      id: "approach",
+      type: "approach",
+      label: "Approccio",
+      title: "Metodo di lavoro",
+      body: "Analisi category, nuove gerarchie tipografiche, test progressivi su varianti cromatiche e ottimizzazione del layout per una lettura immediata su formati differenti.",
+      image: imgEllipse7,
+    },
+    {
+      id: "deliverables",
+      type: "deliverables",
+      label: "Deliverables",
+      title: "Output principali",
+      body: "Architettura pack, key visual, linee guida esecutive e kit di declinazione per estensioni di gamma e materiali promozionali retail.",
+      image: imgEllipse7,
+    },
+    {
+      id: "results",
+      type: "results",
+      label: "Risultato",
+      title: "Feedback Cliente",
+      body: "Il nuovo packaging comunica perfettamente la qualitÃ  e la tradizione Pernigotti, risultando distintivo e moderno.",
+      image: imgEllipse7,
+    },
+    {
+      id: "gallery",
+      type: "gallery",
+      label: "GALLERY",
+      title: "Immagini del progetto",
+      body: "",
+      media: {
+        images: ["https://picsum.photos/seed/proj1a/800/600", "https://picsum.photos/seed/proj1b/800/600", "https://picsum.photos/seed/proj1c/800/600", "https://picsum.photos/seed/proj1d/800/600", "https://picsum.photos/seed/proj1e/800/600", "https://picsum.photos/seed/proj1f/800/600"],
+      },
+    },
+  ],
+  "brand-lab-test": [
+    {
+      id: "overview",
+      type: "overview",
+      label: "Panoramica",
+      title: "Brand Lab Test / Brand",
+      body: "Progetto sintetico su singola schermata: definizione di identita visiva, tono e applicazioni essenziali per test rapido di posizionamento.",
+      image: imgEllipse4,
+    },
+    {
+      id: "gallery",
+      type: "gallery",
+      label: "GALLERY",
+      title: "Immagini del progetto",
+      body: "",
+      media: {
+        images: ["https://picsum.photos/seed/proj2a/800/600", "https://picsum.photos/seed/proj2b/800/600", "https://picsum.photos/seed/proj2c/800/600", "https://picsum.photos/seed/proj2d/800/600", "https://picsum.photos/seed/proj2e/800/600", "https://picsum.photos/seed/proj2f/800/600"],
+      },
+    },
+  ],
+  "sauber-pharma": [
+    {
+      id: "overview",
+      type: "overview",
+      label: "Panoramica",
+      title: "Sauber Pharma / Packaging",
+      body: "Sistema di packaging per linea farmaceutica OTC con forte identita visiva e piena compliance normativa. Progetto sviluppato per garantire massima leggibilita in farmacia e coerenza su tutta la gamma.",
+      image: imgEllipse4,
+    },
+    {
+      id: "challenge",
+      type: "challenge",
+      label: "Challenge",
+      title: "Obiettivo di progetto",
+      body: "Bilanciare rigore regolatorio con un'identita visiva memorabile, capace di distinguersi su lineari affollati e comunicare benefici in modo immediato.",
+      image: imgEllipse4,
+    },
+    {
+      id: "approach",
+      type: "approach",
+      label: "Approccio",
+      title: "Metodo di lavoro",
+      body: "Analisi del mercato OTC e dei principali competitor, ridefinizione della gerarchia informativa, sviluppo di un sistema modulare applicabile all'intera gamma con varianti cromatiche per area terapeutica.",
+      image: imgEllipse4,
+    },
+    {
+      id: "deliverables",
+      type: "deliverables",
+      label: "Deliverables",
+      title: "Output principali",
+      body: "Sistema pack modulare\nLinee guida cromatiche per area terapeutica\nKit declinazioni per estensioni di gamma\nSpecifiche tecniche produzione",
+      image: imgEllipse4,
+    },
+    {
+      id: "results",
+      type: "results",
+      label: "Risultato",
+      title: "Feedback Cliente",
+      body: "Il nuovo sistema packaging ha migliorato la riconoscibilita in farmacia e semplificato la gestione delle varianti di gamma.",
+      image: imgEllipse4,
+    },
+    {
+      id: "gallery",
+      type: "gallery",
+      label: "GALLERY",
+      title: "Immagini del progetto",
+      body: "",
+      media: {
+        images: ["https://picsum.photos/seed/proj3a/800/600", "https://picsum.photos/seed/proj3b/800/600", "https://picsum.photos/seed/proj3c/800/600", "https://picsum.photos/seed/proj3d/800/600", "https://picsum.photos/seed/proj3e/800/600", "https://picsum.photos/seed/proj3f/800/600"],
+      },
+    },
+  ],
+  "suaviter": [
+    {
+      id: "overview",
+      type: "overview",
+      label: "Panoramica",
+      title: "Suaviter / Packaging",
+      body: "Progetto packaging per linea cosmetica premium con forte orientamento alla naturalita e all'esperienza sensoriale del prodotto.",
+      image: imgEllipse6,
+    },
+    {
+      id: "challenge",
+      type: "challenge",
+      label: "Challenge",
+      title: "Obiettivo di progetto",
+      body: "Comunicare premium perception, autenticita naturale e cura artigianale su uno scaffale affollato di riferimenti standardizzati.",
+      image: imgEllipse6,
+    },
+    {
+      id: "approach",
+      type: "approach",
+      label: "Approccio",
+      title: "Metodo di lavoro",
+      body: "Sviluppo di palette raffinata, gerarchia tipografica con serif di carattere, texture ispirate alla materia prima. Test su piu materiali per garantire coerenza tattile e visiva.",
+      image: imgEllipse6,
+    },
+    {
+      id: "deliverables",
+      type: "deliverables",
+      label: "Deliverables",
+      title: "Output principali",
+      body: "Pack intera linea prodotto\nKey visual retail\nDeclinazioni per SKU e bundle\nLinee guida materiali e finitura",
+      image: imgEllipse6,
+    },
+    {
+      id: "results",
+      type: "results",
+      label: "Risultato",
+      title: "Feedback Cliente",
+      body: "Il packaging Suaviter ha ottenuto ottima ricezione al lancio, con feedback molto positivi dalla distribuzione premium.",
+      image: imgEllipse6,
+    },
+    {
+      id: "gallery",
+      type: "gallery",
+      label: "GALLERY",
+      title: "Immagini del progetto",
+      body: "",
+      media: {
+        images: ["https://picsum.photos/seed/proj4a/800/600", "https://picsum.photos/seed/proj4b/800/600", "https://picsum.photos/seed/proj4c/800/600", "https://picsum.photos/seed/proj4d/800/600", "https://picsum.photos/seed/proj4e/800/600", "https://picsum.photos/seed/proj4f/800/600"],
+      },
+    },
+  ],
+  "packaging-test-alpha": [
+    {
+      id: "overview",
+      type: "overview",
+      label: "Panoramica",
+      title: "Packaging Test Alpha / Packaging",
+      body: "Progetto packaging in fase di test e validazione. Concept sviluppato per esplorare nuove direzioni di posizionamento del brand su un target premium emergente.",
+      image: imgEllipse7,
+    },
+    {
+      id: "gallery",
+      type: "gallery",
+      label: "GALLERY",
+      title: "Immagini del progetto",
+      body: "",
+      media: {
+        images: ["https://picsum.photos/seed/proj5a/800/600", "https://picsum.photos/seed/proj5b/800/600", "https://picsum.photos/seed/proj5c/800/600", "https://picsum.photos/seed/proj5d/800/600", "https://picsum.photos/seed/proj5e/800/600", "https://picsum.photos/seed/proj5f/800/600"],
+      },
+    },
+  ],
+  "liabel": [
+    {
+      id: "overview",
+      type: "overview",
+      label: "Panoramica",
+      title: "Liabel / Brand",
+      body: "Ridefinizione dell'identita visiva per brand storico dell'abbigliamento intimo, con l'obiettivo di connettere heritage e contemporaneita su un target femminile allargato.",
+      image: imgEllipse6,
+    },
+    {
+      id: "challenge",
+      type: "challenge",
+      label: "Challenge",
+      title: "Obiettivo di progetto",
+      body: "Rinnovare la brand identity senza perdere il capitale di fiducia accumulato in decenni, avvicinando il brand a un pubblico piu giovane senza alienare la base storica.",
+      image: imgEllipse6,
+    },
+    {
+      id: "approach",
+      type: "approach",
+      label: "Approccio",
+      title: "Metodo di lavoro",
+      body: "Brand audit approfondito, analisi competitor, evoluzione logo e color palette, sviluppo tono di voce e visual language coerente su digital e retail.",
+      image: imgEllipse6,
+    },
+    {
+      id: "deliverables",
+      type: "deliverables",
+      label: "Deliverables",
+      title: "Output principali",
+      body: "Logo evolution e sistema colore\nBrand book completo\nApplicazioni retail e packaging\nLinee guida digital e social\nTemplate campagna",
+      image: imgEllipse6,
+    },
+    {
+      id: "results",
+      type: "results",
+      label: "Risultato",
+      title: "Feedback Cliente",
+      body: "Il progetto ha riposizionato Liabel con successo, con un incremento misurabile della brand recognition e della percezione di modernita.",
+      image: imgEllipse6,
+    },
+    {
+      id: "gallery",
+      type: "gallery",
+      label: "GALLERY",
+      title: "Immagini del progetto",
+      body: "",
+      media: {
+        images: ["https://picsum.photos/seed/proj6a/800/600", "https://picsum.photos/seed/proj6b/800/600", "https://picsum.photos/seed/proj6c/800/600", "https://picsum.photos/seed/proj6d/800/600", "https://picsum.photos/seed/proj6e/800/600", "https://picsum.photos/seed/proj6f/800/600"],
+      },
+    },
+  ],
+  "gotha-cosmetic": [
+    {
+      id: "overview",
+      type: "overview",
+      label: "Panoramica",
+      title: "Gotha Cosmetic / Brand",
+      body: "Brand identity per linea cosmetica luxury con posizionamento high-end, orientata a un target femminile sofisticato e internazionale.",
+      image: imgEllipse4,
+    },
+    {
+      id: "challenge",
+      type: "challenge",
+      label: "Challenge",
+      title: "Obiettivo di progetto",
+      body: "Sviluppare un'estetica luxury autentica, capace di dialogare con il retail premium e supportare un posizionamento price aspirazionale.",
+      image: imgEllipse4,
+    },
+    {
+      id: "approach",
+      type: "approach",
+      label: "Approccio",
+      title: "Metodo di lavoro",
+      body: "Ricerca simbolica approfondita, sviluppo logo su base calligrafica, palette a contrasto con accenti oro, concept di comunicazione raffinato e sobrio.",
+      image: imgEllipse4,
+    },
+    {
+      id: "deliverables",
+      type: "deliverables",
+      label: "Deliverables",
+      title: "Output principali",
+      body: "Logo e sistema simbolico\nBrand book e palette\nKey visual e mood board\nApplicazioni packaging e materiali",
+      image: imgEllipse4,
+    },
+    {
+      id: "results",
+      type: "results",
+      label: "Risultato",
+      title: "Feedback Cliente",
+      body: "L'identita Gotha Cosmetic e stata accolta con entusiasmo dai distributori premium, confermando il posizionamento luxury del brand.",
+      image: imgEllipse4,
+    },
+    {
+      id: "gallery",
+      type: "gallery",
+      label: "GALLERY",
+      title: "Immagini del progetto",
+      body: "",
+      media: {
+        images: ["https://picsum.photos/seed/proj7a/800/600", "https://picsum.photos/seed/proj7b/800/600", "https://picsum.photos/seed/proj7c/800/600", "https://picsum.photos/seed/proj7d/800/600", "https://picsum.photos/seed/proj7e/800/600", "https://picsum.photos/seed/proj7f/800/600"],
+      },
+    },
+  ],
+  "filo-alfa": [
+    {
+      id: "overview",
+      type: "overview",
+      label: "Panoramica",
+      title: "Filo Alfa / Brand",
+      body: "Costruzione ex novo dell'identita di marca per azienda del settore tessile, con forte vocazione artigianale e orientamento al contract e al retail di qualita.",
+      image: imgEllipse7,
+    },
+    {
+      id: "challenge",
+      type: "challenge",
+      label: "Challenge",
+      title: "Obiettivo di progetto",
+      body: "Creare un'identita distintiva in un settore molto tradizionale, capace di comunicare qualita, affidabilita e capacita di personalizzazione.",
+      image: imgEllipse7,
+    },
+    {
+      id: "approach",
+      type: "approach",
+      label: "Approccio",
+      title: "Metodo di lavoro",
+      body: "Naming validation, sviluppo logotipo con rimando alla materia filare, palette sobria e materica, sistema di applicazioni per contesti B2B e retail.",
+      image: imgEllipse7,
+    },
+    {
+      id: "deliverables",
+      type: "deliverables",
+      label: "Deliverables",
+      title: "Output principali",
+      body: "Logo system completo\nBrand guidelines\nApplicazioni: carta intestata, cartellini, buste\nKit digital e social",
+      image: imgEllipse7,
+    },
+    {
+      id: "results",
+      type: "results",
+      label: "Risultato",
+      title: "Feedback Cliente",
+      body: "Filo Alfa ha lanciato la nuova identita con successo su fiere di settore, ottenendo forte interesse da partner retail e showroom.",
+      image: imgEllipse7,
+    },
+    {
+      id: "gallery",
+      type: "gallery",
+      label: "GALLERY",
+      title: "Immagini del progetto",
+      body: "",
+      media: {
+        images: ["https://picsum.photos/seed/proj8a/800/600", "https://picsum.photos/seed/proj8b/800/600", "https://picsum.photos/seed/proj8c/800/600", "https://picsum.photos/seed/proj8d/800/600", "https://picsum.photos/seed/proj8e/800/600", "https://picsum.photos/seed/proj8f/800/600"],
+      },
+    },
+  ],
+  "unicredit": [
+    {
+      id: "overview",
+      type: "overview",
+      label: "Panoramica",
+      title: "Unicredit / BTL & ATL",
+      body: "Campagna di comunicazione BTL e ATL per Unicredit, sviluppata per supportare il lancio di un prodotto finanziario retail con obiettivi di awareness e conversion.",
+      image: imgEllipse6,
+    },
+    {
+      id: "challenge",
+      type: "challenge",
+      label: "Challenge",
+      title: "Obiettivo di progetto",
+      body: "Tradurre un messaggio complesso in comunicazione immediata e impattante, mantenendo il tono istituzionale del brand e differenziandosi su media affollati.",
+      image: imgEllipse6,
+    },
+    {
+      id: "approach",
+      type: "approach",
+      label: "Approccio",
+      title: "Metodo di lavoro",
+      body: "Concept creativo semplificato, gerarchia visiva focalizzata sul beneficio chiave, sviluppo di formati multi-canale coerenti su OOH, digital e materiali fisici.",
+      image: imgEllipse6,
+    },
+    {
+      id: "deliverables",
+      type: "deliverables",
+      label: "Deliverables",
+      title: "Output principali",
+      body: "Campagna OOH (formati 6x3, citylight)\nAsset digital (banner, social)\nSoggetti stampa ATL\nKit adattamenti locali",
+      image: imgEllipse6,
+    },
+    {
+      id: "results",
+      type: "results",
+      label: "Risultato",
+      title: "Feedback Cliente",
+      body: "La campagna ha registrato performance superiori alle aspettative su tutti i canali tracciati, con forte recall assistito.",
+      image: imgEllipse6,
+    },
+    {
+      id: "gallery",
+      type: "gallery",
+      label: "GALLERY",
+      title: "Immagini del progetto",
+      body: "",
+      media: {
+        images: ["https://picsum.photos/seed/proj9a/800/600", "https://picsum.photos/seed/proj9b/800/600", "https://picsum.photos/seed/proj9c/800/600", "https://picsum.photos/seed/proj9d/800/600", "https://picsum.photos/seed/proj9e/800/600", "https://picsum.photos/seed/proj9f/800/600"],
+      },
+    },
+  ],
+  "sauber-pharma-btl": [
+    {
+      id: "overview",
+      type: "overview",
+      label: "Panoramica",
+      title: "Sauber Pharma / BTL",
+      body: "Progetto comunicazione BTL per Sauber Pharma, focalizzato sull'attivazione punto vendita farmacia e sul supporto al sell-out con materiali mirati.",
+      image: imgEllipse4,
+    },
+    {
+      id: "challenge",
+      type: "challenge",
+      label: "Challenge",
+      title: "Obiettivo di progetto",
+      body: "Aumentare la visibilita dei prodotti in farmacia e supportare il sell-out con materiali che valorizzino l'expertise del brand senza risultare meramente promozionali.",
+      image: imgEllipse4,
+    },
+    {
+      id: "approach",
+      type: "approach",
+      label: "Approccio",
+      title: "Metodo di lavoro",
+      body: "Studio dei touchpoint chiave in farmacia, sviluppo sistema di visual merchandising coerente, produzione materiali educativi e di engagement per farmacisti.",
+      image: imgEllipse4,
+    },
+    {
+      id: "deliverables",
+      type: "deliverables",
+      label: "Deliverables",
+      title: "Output principali",
+      body: "Display PDV modulari\nKit comunicazione farmacista\nMateriali formazione team commerciale\nBanner roll-up e totem",
+      image: imgEllipse4,
+    },
+    {
+      id: "results",
+      type: "results",
+      label: "Risultato",
+      title: "Feedback Cliente",
+      body: "Il kit BTL ha migliorato in modo significativo la presenza a scaffale e la qualita delle relazioni commerciali con le farmacie.",
+      image: imgEllipse4,
+    },
+    {
+      id: "gallery",
+      type: "gallery",
+      label: "GALLERY",
+      title: "Immagini del progetto",
+      body: "",
+      media: {
+        images: ["https://picsum.photos/seed/proj10a/800/600", "https://picsum.photos/seed/proj10b/800/600", "https://picsum.photos/seed/proj10c/800/600", "https://picsum.photos/seed/proj10d/800/600", "https://picsum.photos/seed/proj10e/800/600", "https://picsum.photos/seed/proj10f/800/600"],
+      },
+    },
+  ],
+  "piero-trentini": [
+    {
+      id: "overview",
+      type: "overview",
+      label: "Panoramica",
+      title: "Piero Trentini / BTL & ATL",
+      body: "Piano di comunicazione integrata per brand del settore terziario locale, con attivazioni BTL sul territorio e materiali ATL per awareness regionale.",
+      image: imgEllipse7,
+    },
+    {
+      id: "challenge",
+      type: "challenge",
+      label: "Challenge",
+      title: "Obiettivo di progetto",
+      body: "Costruire riconoscibilita di marca in un mercato locale competitivo con budget focalizzato, massimizzando la presenza su tutti i touchpoint rilevanti.",
+      image: imgEllipse7,
+    },
+    {
+      id: "approach",
+      type: "approach",
+      label: "Approccio",
+      title: "Metodo di lavoro",
+      body: "Comunicazione locale integrata, visual identity applicata a formati BTL e ATL, coordinamento con il team commerciale per presidio capillare del territorio.",
+      image: imgEllipse7,
+    },
+    {
+      id: "deliverables",
+      type: "deliverables",
+      label: "Deliverables",
+      title: "Output principali",
+      body: "Campagna outdoor locale\nMateriali BTL: brochure, flyer, roll-up\nAsset digital per campagna locale\nKit coordinato immagine",
+      image: imgEllipse7,
+    },
+    {
+      id: "results",
+      type: "results",
+      label: "Risultato",
+      title: "Feedback Cliente",
+      body: "Il piano comunicazione ha prodotto un incremento misurabile della notorieta locale e un aumento dei contatti commerciali.",
+      image: imgEllipse7,
+    },
+    {
+      id: "gallery",
+      type: "gallery",
+      label: "GALLERY",
+      title: "Immagini del progetto",
+      body: "",
+      media: {
+        images: ["https://picsum.photos/seed/proj11a/800/600", "https://picsum.photos/seed/proj11b/800/600", "https://picsum.photos/seed/proj11c/800/600", "https://picsum.photos/seed/proj11d/800/600", "https://picsum.photos/seed/proj11e/800/600", "https://picsum.photos/seed/proj11f/800/600"],
+      },
+    },
+  ],
+  "atl-test-beta": [
+    {
+      id: "overview",
+      type: "overview",
+      label: "Panoramica",
+      title: "ATL Test Beta / BTL & ATL",
+      body: "Progetto campagna ATL in fase di test e validazione. Concept in sviluppo per esplorare nuovi approcci creativi su media tradizionali con target primario 25â€“45 anni.",
+      image: imgEllipse6,
+    },
+    {
+      id: "gallery",
+      type: "gallery",
+      label: "GALLERY",
+      title: "Immagini del progetto",
+      body: "",
+      media: {
+        images: ["https://picsum.photos/seed/proj12a/800/600", "https://picsum.photos/seed/proj12b/800/600", "https://picsum.photos/seed/proj12c/800/600", "https://picsum.photos/seed/proj12d/800/600", "https://picsum.photos/seed/proj12e/800/600", "https://picsum.photos/seed/proj12f/800/600"],
+      },
+    },
+  ],
+  "andrea-pieralli": [
+    {
+      id: "overview",
+      type: "overview",
+      label: "Panoramica",
+      title: "Andrea Pieralli / Events",
+      body: "Event concept e comunicazione per progetto artistico e culturale, con sviluppo di brand evento, materiali di promozione e visual on-site.",
+      image: imgEllipse4,
+    },
+    {
+      id: "challenge",
+      type: "challenge",
+      label: "Challenge",
+      title: "Obiettivo di progetto",
+      body: "Creare un'identita visiva per evento culturale capace di comunicare autorevolezza e accessibilita, attraendo pubblico variegato e media di settore.",
+      image: imgEllipse4,
+    },
+    {
+      id: "approach",
+      type: "approach",
+      label: "Approccio",
+      title: "Metodo di lavoro",
+      body: "Concept visivo forte, identita evento coerente su tutti i formati, sviluppo materiali di promozione, coordinamento produzione e visual per il giorno dell'evento.",
+      image: imgEllipse4,
+    },
+    {
+      id: "deliverables",
+      type: "deliverables",
+      label: "Deliverables",
+      title: "Output principali",
+      body: "Brand evento completo\nMateriali promo: poster, inviti, brochure\nAsset digital e social\nVisual produzione on-site",
+      image: imgEllipse4,
+    },
+    {
+      id: "results",
+      type: "results",
+      label: "Risultato",
+      title: "Feedback Cliente",
+      body: "L'evento ha registrato una presenza oltre le aspettative, con forte copertura mediatica e feedback molto positivi da pubblico e stampa.",
+      image: imgEllipse4,
+    },
+    {
+      id: "gallery",
+      type: "gallery",
+      label: "GALLERY",
+      title: "Immagini del progetto",
+      body: "",
+      media: {
+        images: ["https://picsum.photos/seed/proj13a/800/600", "https://picsum.photos/seed/proj13b/800/600", "https://picsum.photos/seed/proj13c/800/600", "https://picsum.photos/seed/proj13d/800/600", "https://picsum.photos/seed/proj13e/800/600", "https://picsum.photos/seed/proj13f/800/600"],
+      },
+    },
+  ],
+  "italiana-assicurazioni": [
+    {
+      id: "overview",
+      type: "overview",
+      label: "Panoramica",
+      title: "Italiana Assicurazioni / Events",
+      body: "Evento corporate per brand assicurativo, sviluppato per rafforzare la relazione con la rete agenziale e presentare nuovi prodotti in un contesto di alto profilo.",
+      image: imgEllipse7,
+    },
+    {
+      id: "challenge",
+      type: "challenge",
+      label: "Challenge",
+      title: "Obiettivo di progetto",
+      body: "Progettare un'esperienza evento coerente con l'identita istituzionale del brand, capace di motivare la rete commerciale e valorizzare i nuovi lanci di prodotto.",
+      image: imgEllipse7,
+    },
+    {
+      id: "approach",
+      type: "approach",
+      label: "Approccio",
+      title: "Metodo di lavoro",
+      body: "Visual event identity integrata con le guidelines corporate, sviluppo allestimenti di rappresentanza, materiali di sala e asset di comunicazione digitale.",
+      image: imgEllipse7,
+    },
+    {
+      id: "deliverables",
+      type: "deliverables",
+      label: "Deliverables",
+      title: "Output principali",
+      body: "Visual event identity\nAllestimenti e segnaletica evento\nKit materiali di sala\nAsset digital e post-event",
+      image: imgEllipse7,
+    },
+    {
+      id: "results",
+      type: "results",
+      label: "Risultato",
+      title: "Feedback Cliente",
+      body: "L'evento ha ottenuto un eccellente riscontro dalla rete agenziale, contribuendo in modo significativo al lancio dei nuovi prodotti assicurativi.",
+      image: imgEllipse7,
+    },
+    {
+      id: "gallery",
+      type: "gallery",
+      label: "GALLERY",
+      title: "Immagini del progetto",
+      body: "",
+      media: {
+        images: ["https://picsum.photos/seed/proj14a/800/600", "https://picsum.photos/seed/proj14b/800/600", "https://picsum.photos/seed/proj14c/800/600", "https://picsum.photos/seed/proj14d/800/600", "https://picsum.photos/seed/proj14e/800/600", "https://picsum.photos/seed/proj14f/800/600"],
+      },
+    },
+  ],
+  "nissan": [
+    {
+      id: "overview",
+      type: "overview",
+      label: "Panoramica",
+      title: "Nissan / Events",
+      body: "Evento lancio prodotto automotive per Nissan, pensato come experience immersiva capace di coinvolgere media, dealer e pubblico appassionato.",
+      image: imgEllipse6,
+    },
+    {
+      id: "challenge",
+      type: "challenge",
+      label: "Challenge",
+      title: "Obiettivo di progetto",
+      body: "Creare un'esperienza evento memorabile che traduca i valori del brand in un'atmosfera di forte impatto emotivo, massimizzando la copertura mediatica.",
+      image: imgEllipse6,
+    },
+    {
+      id: "approach",
+      type: "approach",
+      label: "Approccio",
+      title: "Metodo di lavoro",
+      body: "Concept esperienziale integrato, sviluppo visual ad alto impatto, coordinamento con il team Nissan per selezione location e gestione produzione evento.",
+      image: imgEllipse6,
+    },
+    {
+      id: "deliverables",
+      type: "deliverables",
+      label: "Deliverables",
+      title: "Output principali",
+      body: "Stand e allestimenti evento\nKit visual e brandizzazione location\nMateriali media kit\nAsset digital e social per l'evento",
+      image: imgEllipse6,
+    },
+    {
+      id: "results",
+      type: "results",
+      label: "Risultato",
+      title: "Feedback Cliente",
+      body: "Il lancio ha generato grande attenzione mediatica e un alto engagement sui canali social, superando gli obiettivi di reach iniziali.",
+      image: imgEllipse6,
+    },
+    {
+      id: "gallery",
+      type: "gallery",
+      label: "GALLERY",
+      title: "Immagini del progetto",
+      body: "",
+      media: {
+        images: ["https://picsum.photos/seed/proj15a/800/600", "https://picsum.photos/seed/proj15b/800/600", "https://picsum.photos/seed/proj15c/800/600", "https://picsum.photos/seed/proj15d/800/600", "https://picsum.photos/seed/proj15e/800/600", "https://picsum.photos/seed/proj15f/800/600"],
+      },
+    },
+  ],
+  "event-test-gamma": [
+    {
+      id: "overview",
+      type: "overview",
+      label: "Panoramica",
+      title: "Event Test Gamma / Events",
+      body: "Progetto evento in fase di concept e validazione. Idea creativa in sviluppo per un'attivazione esperienziale su target B2C con un approccio innovativo alla brand experience.",
+      image: imgEllipse4,
+    },
+    {
+      id: "gallery",
+      type: "gallery",
+      label: "GALLERY",
+      title: "Immagini del progetto",
+      body: "",
+      media: {
+        images: ["https://picsum.photos/seed/proj16a/800/600", "https://picsum.photos/seed/proj16b/800/600", "https://picsum.photos/seed/proj16c/800/600", "https://picsum.photos/seed/proj16d/800/600", "https://picsum.photos/seed/proj16e/800/600", "https://picsum.photos/seed/proj16f/800/600"],
+      },
+    },
+  ],
+};
+
+const PROJECT_VISUALS_BY_CATEGORY: Record<string, string[]> = {
+  "Packaging": [imgEllipse7, imgEllipse6, imgEllipse4],
+  "Brand": [imgEllipse4, imgEllipse7, imgEllipse6],
+  "BTL & ATL": [imgEllipse6, imgEllipse4, imgEllipse7],
+  "EVENTS": [imgEllipse6, imgEllipse7, imgEllipse4],
+};
+
+function getProjectVisualSeed(projectId: string) {
+  return projectId.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+}
+
+function enrichProjectSection(section: ProjectSection, project: { id: string; title: string; category: string; image?: string; feedbackQuote?: string; feedbackAuthor?: string }, index: number, total: number): ProjectSection {
+  const visuals = PROJECT_VISUALS_BY_CATEGORY[project.category] ?? [imgEllipse4, imgEllipse6, imgEllipse7];
+  const seed = getProjectVisualSeed(project.id);
+  // Fallback costante per progetto: project.image ha precedenza, poi visuals[seed % n] (NON cycling per sezione)
+  const projectFallbackImage = project.image ?? visuals[seed % visuals.length];
+  const secondaryImage = visuals[(seed + 1) % visuals.length];
+  const tertiaryImage = visuals[(seed + 2) % visuals.length];
+  const sectionFallbackImage = section.image || projectFallbackImage;
+  const mediaFallbackImage = section.media?.image || sectionFallbackImage;
+  const mediaFallbackImages = section.media?.images && section.media.images.length > 0
+    ? section.media.images
+    : [sectionFallbackImage, secondaryImage, tertiaryImage];
+
+  const nextSection: ProjectSection = {
+    ...section,
+    // Propaga sempre section.image: usa il campo esplicito, poi l'immagine del progetto
+    image: sectionFallbackImage,
+    highlights: section.highlights ?? [project.category, project.title, `Sezione ${index + 1}/${total}`],
+    media: {
+      ...(section.media ?? {}),
+      image: mediaFallbackImage,
+      images: mediaFallbackImages,
+    },
+  };
+
+  if (section.type === "overview") {
+    nextSection.kpis = section.kpis ?? [
+      { label: "Categoria", value: project.category },
+      { label: "Focus", value: "Brand Experience" },
+      { label: "Scope", value: `${total} sezioni` },
+    ];
+  }
+
+  if (section.type === "deliverables") {
+    nextSection.kpis = section.kpis ?? [
+      { label: "Categoria", value: project.category },
+      { label: "Scope", value: `${total} sezioni` },
+    ];
+  }
+
+  if (section.type === "results") {
+    nextSection.kpis = section.kpis ?? [
+      { label: "Impatto", value: "Premium" },
+      { label: "Percezione", value: "Elevata" },
+      { label: "Output", value: "Completo" },
+    ];
+    nextSection.quote = section.quote ?? (project.feedbackQuote
+      ? { text: project.feedbackQuote, author: project.feedbackAuthor }
+      : undefined);
+  }
+
+  if (section.type === "gallery") {
+    nextSection.media = {
+      image: mediaFallbackImage,
+      images: mediaFallbackImages,
+      video: section.media?.video,
+    };
+  }
+
+  return nextSection;
+}
+
+function resolveProjectSections(project: {
+  id: string;
+  title: string;
+  category: string;
+  image?: string;
+  feedbackQuote?: string;
+  feedbackAuthor?: string;
+}): ProjectSection[] {
+  const customSections = PROJECT_SECTIONS_BY_ID[project.id];
+  if (customSections && customSections.length > 0) {
+    return customSections.map((section, index) => enrichProjectSection(section, project, index, customSections.length));
+  }
+
+  const fallbackSections = buildDefaultProjectSections(project);
+  return fallbackSections.map((section, index) => enrichProjectSection(section, project, index, fallbackSections.length));
+}
+
+function getAllProjects(): CarouselProject[] {
+  return PROJECT_LIST_CATEGORIES.flatMap((category) =>
+    category.items.map((item) => {
+      const featured = "featuredIndex" in item ? FEATURED_PROJECTS[(item as { featuredIndex: number }).featuredIndex] : null;
+      const feedbackQuote = featured?.feedbackQuote as string | undefined;
+      const feedbackAuthor = featured?.feedbackAuthor as string | undefined;
+      const projectImage = PROJECT_MAIN_IMAGE_BY_ID[item.id];
+      return {
+        id: item.id,
+        title: item.label,
+        category: category.label,
+        image: projectImage,
+        sections: resolveProjectSections({
+          id: item.id,
+          title: item.label,
+          category: category.label,
+          image: projectImage,
+          feedbackQuote,
+          feedbackAuthor,
+        }),
+        feedbackQuote,
+        feedbackAuthor,
+      };
+    })
+  );
+}
+
+function getProjectsForService(serviceName?: string): CarouselProject[] {
+  if (!serviceName) {
+    return getAllProjects();
+  }
+  const categoryLabel = SERVICE_TO_CATEGORY[serviceName] || serviceName;
+  const category = PROJECT_LIST_CATEGORIES.find(c => c.label === categoryLabel);
+  if (!category) return [];
+  return category.items.map(item => {
+    const featured = "featuredIndex" in item ? FEATURED_PROJECTS[(item as { featuredIndex: number }).featuredIndex] : null;
+    const feedbackQuote = featured?.feedbackQuote as string | undefined;
+    const feedbackAuthor = featured?.feedbackAuthor as string | undefined;
+    const projectImage = PROJECT_MAIN_IMAGE_BY_ID[item.id];
+    return {
+      id: item.id,
+      title: item.label,
+      category: category.label,
+      image: projectImage,
+      sections: resolveProjectSections({
+        id: item.id,
+        title: item.label,
+        category: category.label,
+        image: projectImage,
+        feedbackQuote,
+        feedbackAuthor,
+      }),
+      feedbackQuote,
+      feedbackAuthor,
+    };
+  });
+}
+
+function getProjectsRoute(service?: string, projectId?: string, sectionIndex = 0) {
+  const base = projectId ? `/progetti/${projectId}/sezione/${Math.max(0, sectionIndex)}` : "/progetti";
+  if (!service) return base;
+  const qs = new URLSearchParams({ servizio: service }).toString();
+  return `${base}?${qs}`;
+}
+
+function parseProjectsRoute() {
+  const { pathname, search, hash } = window.location;
+  const normalizedPath = decodeURIComponent(pathname).toLowerCase().replace(/\/+$/, "");
+  const compactPath = normalizedPath.replace(/\s+/g, "-");
+
+  const routeAliases = ["/progetti", "/scopri-progetti", "/scorpii-progetti", "/scoprii-progetti", "/scorpi-progetti"];
+  const matchedAlias = routeAliases.find((alias) => compactPath === alias || compactPath.startsWith(`${alias}/`));
+  const isLegacyHashRoute = hash.toLowerCase() === "#progetti";
+
+  if (!matchedAlias && !isLegacyHashRoute) {
+    return {
+      isProjects: false,
+      service: undefined as string | undefined,
+      projectId: undefined as string | undefined,
+      sectionIndex: undefined as number | undefined,
+      needsCanonical: false,
+    };
+  }
+
+  const slug = matchedAlias ? compactPath.slice(matchedAlias.length).replace(/^\/+/, "") : "";
+  const slugParts = slug.length > 0 ? slug.split("/") : [];
+  const projectId = slugParts.length > 0 ? decodeURIComponent(slugParts[0]) : undefined;
+  const sectionIndexRaw = slugParts.length >= 3 && slugParts[1] === "sezione" ? Number(slugParts[2]) : undefined;
+  const sectionIndex = Number.isFinite(sectionIndexRaw) && (sectionIndexRaw as number) >= 0
+    ? Math.floor(sectionIndexRaw as number)
+    : 0;
+  const params = new URLSearchParams(search);
+  const service = params.get("servizio") ?? undefined;
+  const needsCanonical = isLegacyHashRoute || (!!matchedAlias && matchedAlias !== "/progetti");
+  return { isProjects: true, service, projectId, sectionIndex, needsCanonical };
+}
+
+function ProjectsPage({
+  onBack,
+  service,
+  initialProjectId,
+  initialSectionIndex,
+  onProjectChange,
+}: {
+  onBack: () => void;
+  service?: string;
+  initialProjectId?: string;
+  initialSectionIndex?: number;
+  onProjectChange?: (projectId: string, sectionIndex: number) => void;
+}) {
+  const projects = useMemo(() => getProjectsForService(service), [service]);
+  const isMobile = useMediaQuery("(max-width: 767px)");
+  const showStyleDebugMarker = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("debug-style") === "1";
+  }, []);
+
+  // Compute initial index once from initialProjectId
+  const initialIndex = useMemo(() => {
+    if (!initialProjectId || projects.length === 0) return 0;
+    const idx = projects.findIndex((p) => p.id === initialProjectId);
+    return idx >= 0 ? idx : 0;
+  }, [initialProjectId, projects]);
+
+  const [activeIndex, setActiveIndex] = useState(initialIndex);
+  const [projectSectionIndex, setProjectSectionIndex] = useState(Math.max(0, initialSectionIndex ?? 0));
+  const total = projects.length;
+  const activeProject = projects[activeIndex] ?? null;
+  const touchStartYRef = useRef<number | null>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  // Ref to the scrollable inner container of the active project section
+  const sectionScrollRef = useRef<HTMLDivElement>(null);
+
+  // Keep a ref to onProjectChange so the effect never re-fires due to callback identity
+  const onProjectChangeRef = useRef(onProjectChange);
+  onProjectChangeRef.current = onProjectChange;
+
+  // FIX 1: Misura altezza header e salva in CSS variable
+  useEffect(() => {
+    if (!headerRef.current) return;
+    const updateHeaderHeight = () => {
+      const height = headerRef.current?.getBoundingClientRect().height ?? 140;
+      document.documentElement.style.setProperty('--header-bottom', `${height}px`);
+    };
+    updateHeaderHeight();
+    window.addEventListener('resize', updateHeaderHeight);
+    return () => window.removeEventListener('resize', updateHeaderHeight);
+  }, []);
+
+  const goPrev = useCallback(() => {
+    setActiveIndex((prev) => (prev === 0 ? total - 1 : prev - 1));
+    setProjectSectionIndex(0);
+  }, [total]);
+
+  const goNext = useCallback(() => {
+    setActiveIndex((prev) => (prev === total - 1 ? 0 : prev + 1));
+    setProjectSectionIndex(0);
+  }, [total]);
+
+  const projectSectionCount = Math.max(1, activeProject?.sections.length ?? 1);
+  const safeProjectSectionIndex = Math.min(Math.max(projectSectionIndex, 0), projectSectionCount - 1);
+  const projectScrollLockRef = useRef(false);
+  const projectUnlockTimeoutRef = useRef<number | null>(null);
+  const activeProjectRef = useRef(activeProject);
+  const projectSectionCountRef = useRef(projectSectionCount);
+  const safeProjectSectionIndexRef = useRef(safeProjectSectionIndex);
+  const totalRef = useRef(total);
+
+  activeProjectRef.current = activeProject;
+  projectSectionCountRef.current = projectSectionCount;
+  safeProjectSectionIndexRef.current = safeProjectSectionIndex;
+  totalRef.current = total;
+
+  const unlockProjectScroll = useCallback((delay: number) => {
+    if (projectUnlockTimeoutRef.current !== null) {
+      window.clearTimeout(projectUnlockTimeoutRef.current);
+    }
+
+    projectUnlockTimeoutRef.current = window.setTimeout(() => {
+      projectScrollLockRef.current = false;
+      projectUnlockTimeoutRef.current = null;
+    }, delay);
+  }, []);
+
+  const navigateProjectScroll = useCallback((direction: "next" | "prev") => {
+    if (projectScrollLockRef.current || !activeProjectRef.current) return;
+
+    projectScrollLockRef.current = true;
+
+    const currentSectionCount = projectSectionCountRef.current;
+    const currentSectionIndex = safeProjectSectionIndexRef.current;
+    const currentTotal = totalRef.current;
+
+    if (direction === "next") {
+      if (currentSectionIndex < currentSectionCount - 1) {
+        setProjectSectionIndex((prev) => prev + 1);
+        unlockProjectScroll(650);
+        return;
+      }
+
+      setActiveIndex((prev) => (prev === currentTotal - 1 ? 0 : prev + 1));
+      setProjectSectionIndex(0);
+      unlockProjectScroll(850);
+      return;
+    }
+
+    if (currentSectionIndex > 0) {
+      setProjectSectionIndex((prev) => prev - 1);
+      unlockProjectScroll(650);
+      return;
+    }
+
+    setActiveIndex((prev) => (prev === 0 ? currentTotal - 1 : prev - 1));
+    setProjectSectionIndex(0);
+    unlockProjectScroll(850);
+  }, [unlockProjectScroll]);
+
+  const activeProjectSection = activeProject?.sections[safeProjectSectionIndex] ?? {
+    id: "overview",
+    type: "overview",
+    label: "Panoramica",
+    title: "",
+    body: "",
+  };
+  const firstSectionImage = activeProject?.sections[0]?.media?.image ?? activeProject?.sections[0]?.image;
+  const activeSectionImage = activeProjectSection.media?.image ?? activeProjectSection.image ?? firstSectionImage;
+  const resolvedActiveProjectSection = {
+    ...activeProjectSection,
+    image: activeSectionImage,
+    media: {
+      ...(activeProjectSection.media ?? {}),
+      image: activeSectionImage,
+    },
+  };
+
+  useEffect(() => {
+    setActiveIndex(initialIndex);
+  }, [initialIndex]);
+
+  useEffect(() => {
+    setProjectSectionIndex(Math.max(0, initialSectionIndex ?? 0));
+  }, [initialSectionIndex, initialProjectId]);
+
+  useEffect(() => {
+    if (projectSectionIndex <= projectSectionCount - 1) return;
+    setProjectSectionIndex(projectSectionCount - 1);
+  }, [projectSectionCount, projectSectionIndex]);
+
+  useEffect(() => {
+    const handleProjectWheel = (e: WheelEvent) => {
+      const el = sectionScrollRef.current;
+
+      if (el) {
+        // Get dimensions with debug info
+        const rect = el.getBoundingClientRect();
+        const scrollable = el.scrollHeight > el.clientHeight + 4;
+        const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 10;
+        const atTop = el.scrollTop <= 10;
+
+        // Enhanced debug logging
+        if (Math.abs(e.deltaY) > 20) {
+          console.log(`[Wheel] ref=${el ? 'attached' : 'null'}, scrollable=${scrollable}`);
+          console.log(`  scrollHeight=${el.scrollHeight}, clientHeight=${el.clientHeight}, diff=${el.scrollHeight - el.clientHeight}`);
+          console.log(`  scrollTop=${el.scrollTop}, atTop=${atTop}, atBottom=${atBottom}`);
+          console.log(`  rect.height=${rect.height}, deltaY=${e.deltaY}`);
+        }
+
+        // PARTE B: Internal scroll logic with generous thresholds
+        if (scrollable) {
+          if (e.deltaY > 0 && !atBottom) {
+            e.preventDefault();
+            el.scrollBy({ top: 100, behavior: "smooth" });
+            console.log(`[Wheel] ✓ Scrolling DOWN internally`);
+            return;
+          }
+
+          if (e.deltaY < 0 && !atTop) {
+            e.preventDefault();
+            el.scrollBy({ top: -100, behavior: "smooth" });
+            console.log(`[Wheel] ✓ Scrolling UP internally`);
+            return;
+          }
+        }
+      }
+
+      // If no internal scroll happened, try section navigation
+      if (Math.abs(e.deltaY) < 45) return;
+
+      e.preventDefault();
+      console.log(`[Wheel] → Navigating section, deltaY=${e.deltaY}`);
+      navigateProjectScroll(e.deltaY > 0 ? "next" : "prev");
+    };
+
+    window.addEventListener("wheel", handleProjectWheel, { passive: false });
+
+    return () => {
+      window.removeEventListener("wheel", handleProjectWheel);
+    };
+  }, [navigateProjectScroll]);
+
+  useEffect(() => {
+    return () => {
+      if (projectUnlockTimeoutRef.current !== null) {
+        window.clearTimeout(projectUnlockTimeoutRef.current);
+        projectUnlockTimeoutRef.current = null;
+      }
+      projectScrollLockRef.current = false;
+    };
+  }, []);
+
+  const handleProjectTouchStart = (e: React.TouchEvent) => {
+    touchStartYRef.current = e.targetTouches[0].clientY;
+  };
+
+  const handleProjectTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartYRef.current === null) return;
+
+    const touchEnd = e.changedTouches[0].clientY;
+    const diff = touchStartYRef.current - touchEnd;
+
+    if (Math.abs(diff) > 50) {
+      // Check inner scroll state (native touch scrolling may have already moved the container)
+      if (sectionScrollRef.current) {
+        const el = sectionScrollRef.current;
+        if (diff > 0 && el.scrollTop + el.clientHeight < el.scrollHeight - 5) {
+          // Inner content is not yet at the bottom — native scroll handled it
+          touchStartYRef.current = null;
+          return;
+        }
+        if (diff < 0 && el.scrollTop > 5) {
+          // Inner content is not yet at the top — native scroll handled it
+          touchStartYRef.current = null;
+          return;
+        }
+      }
+      navigateProjectScroll(diff > 0 ? "next" : "prev");
+    }
+
+    touchStartYRef.current = null;
+  };
+
+  // Notify parent only when activeIndex changes (not on callback identity change)
+  useEffect(() => {
+    if (!activeProject?.id) return;
+    onProjectChangeRef.current?.(activeProject.id, safeProjectSectionIndex);
+  }, [activeProject?.id, safeProjectSectionIndex]);
+
+  if (!activeProject || total === 0) {
+    return (
+      <div className="fixed inset-0 w-full h-full font-['Inter',sans-serif] flex flex-col items-center justify-center" style={{ backgroundColor: "#ffffff" }}>
+        <p className="text-[20px] md:text-[28px] text-[#7d7b79] mb-6">Nessun progetto disponibile per questa categoria.</p>
+        <button onClick={onBack} className="group flex items-center gap-2 font-bold text-[16px] md:text-[18px] text-[#d72488] transition-all duration-300 hover:gap-3">
+          <svg className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+          </svg>
+          Torna ai servizi
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="font-['Inter',sans-serif]"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        zIndex: 0,
+      }}
+      onTouchStart={handleProjectTouchStart}
+      onTouchEnd={handleProjectTouchEnd}
+    >
+      {showStyleDebugMarker && (
+        <div
+          className="fixed pointer-events-none"
+          style={{
+            top: isMobile ? 16 : 20,
+            right: isMobile ? 16 : 20,
+            zIndex: 160,
+            padding: isMobile ? "8px 12px" : "10px 14px",
+            borderRadius: 999,
+            border: "1px solid rgba(255,255,255,0.35)",
+            background: "linear-gradient(120deg, #7EB83A, #C94B8F)",
+            color: "#ffffff",
+            fontWeight: 800,
+            fontSize: isMobile ? "11px" : "12px",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            boxShadow: "0 14px 30px rgba(0,0,0,0.18)",
+          }}
+        >
+          style-check: {activeProject.id} / {safeProjectSectionIndex}
+        </div>
+      )}
+
+      {/* Compact Header â€” non-animated, flex sibling above content */}
+      <div
+        ref={headerRef}
+        style={{
+          width: '100%',
+          flexShrink: 0,
+          zIndex: 140,
+          padding: isMobile ? '10px 16px 6px' : '14px clamp(20px, 4vw, 40px) 6px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 6,
+          pointerEvents: 'auto',
+        }}
+      >
+        {/* Row 1: back pill | title (centered) | project index */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+          <a
+            href="/"
+            onClick={(e) => { e.preventDefault(); onBack(); }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: isMobile ? "9px 12px" : "10px 14px",
+              borderRadius: 999,
+              border: "1px solid rgba(215, 36, 136, 0.25)",
+              background: "rgba(255,255,255,0.82)",
+              color: "#7d7b79",
+              fontWeight: 700,
+              fontSize: isMobile ? "14px" : "16px",
+              lineHeight: 1,
+              textDecoration: "none",
+              whiteSpace: "nowrap",
+              backdropFilter: "blur(12px)",
+              boxShadow: "0 10px 28px rgba(16,16,16,0.08)",
+              flexShrink: 0,
+            }}
+          >
+            <svg style={{ width: 20, height: 20, color: "#d72488", pointerEvents: "none", flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+            </svg>
+            Torna ai servizi
+          </a>
+
+          <p style={{
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            margin: 0,
+            fontWeight: 900,
+            fontSize: isMobile ? '20px' : 'clamp(1.75rem, 2.5vw, 2rem)',
+            lineHeight: 1,
+            letterSpacing: '-0.02em',
+            whiteSpace: 'nowrap',
+            pointerEvents: 'none',
+          }}>
+            <span style={{ color: '#111' }}>{String(activeIndex + 1).padStart(2, "0")}</span>
+            <span style={{ color: '#aaa' }}> / </span>
+            <span style={{ color: '#d72488' }}>{activeProject.title}</span>
+          </p>
+
+          <span style={{
+            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+            fontSize: 11,
+            color: '#aaa',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
+          }}>
+            PROJECT INDEX {activeIndex + 1}/{total}
+          </span>
+        </div>
+
+        {/* Row 2: tag pills */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ display: 'inline-flex', border: '1px solid #d9d9d9', borderRadius: 999, padding: '4px 12px', fontSize: 12, color: '#101010', fontWeight: 600, background: 'rgba(255,255,255,0.75)' }}>
+            {activeProject.category}
+          </span>
+          <span style={{ display: 'inline-flex', border: '1px solid #d9d9d9', borderRadius: 999, padding: '4px 12px', fontSize: 12, color: '#616773', fontWeight: 600, background: 'linear-gradient(to right, rgba(222,92,161,0.08), rgba(118,183,41,0.08))' }}>
+            Structured project narrative
+          </span>
+        </div>
+      </div>
+
+      {/* Project Content */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={`${activeProject.id}-${projectSectionIndex}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
+          className="relative z-20 w-full pointer-events-none"
+          style={{ willChange: "opacity", flex: 1, minHeight: 0 }}
+        >
+          {/* Content area â€” fills all remaining height below the compact header */}
+          <div style={{ position: 'absolute', inset: 0 }} className="pointer-events-auto">
+            <ProjectSectionRenderer
+              section={resolvedActiveProjectSection}
+              project={activeProject}
+              sectionIndex={safeProjectSectionIndex}
+              sectionCount={projectSectionCount}
+              scrollContainerRef={sectionScrollRef}
+            />
+          </div>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Carousel Arrows removed â€” project navigation handled by Prev/Next pill below */}
+
+      <div
+        className="fixed pointer-events-auto"
+        style={{
+          left: "50%",
+          bottom: isMobile ? 64 : 56,
+          transform: "translateX(-50%)",
+          zIndex: 130,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        <button
+          type="button"
+          onClick={goPrev}
+          style={{
+            padding: "10px 22px",
+            borderRadius: 46,
+            border: "1.5px solid #d5d0c8",
+            background: "#dfd9cf",
+            color: "#101010",
+            fontWeight: 700,
+            fontSize: isMobile ? "14px" : "15px",
+            lineHeight: 1,
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {"←"} {isMobile ? "Prev" : "Progetto precedente"}
+        </button>
+        <button
+          type="button"
+          onClick={goNext}
+          style={{
+            padding: "10px 22px",
+            borderRadius: 46,
+            border: "1.5px solid #d5d0c8",
+            background: "#dfd9cf",
+            color: "#101010",
+            fontWeight: 700,
+            fontSize: isMobile ? "14px" : "15px",
+            lineHeight: 1,
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {isMobile ? "Next" : "Progetto successivo"} {"→"}
+        </button>
+      </div>
+
+      <div className="fixed pointer-events-auto" style={{ right: 24, top: "50%", transform: "translateY(-50%)", zIndex: 130, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+        <span style={{ fontSize: "11px", fontWeight: 600, color: "#616773", lineHeight: 1, whiteSpace: "nowrap", marginBottom: 2 }}>
+          {safeProjectSectionIndex + 1} / {projectSectionCount}
+        </span>
+        {Array.from({ length: projectSectionCount }).map((_, idx) => (
+          <button
+            key={`section-${idx}`}
+            type="button"
+            onClick={() => setProjectSectionIndex(idx)}
+            aria-label={`Vai alla sezione progetto ${idx + 1}`}
+            style={{
+              borderRadius: '50%',
+              cursor: "pointer",
+              transition: "all 0.2s",
+              padding: 0,
+              width: safeProjectSectionIndex === idx ? 10 : 8,
+              height: safeProjectSectionIndex === idx ? 10 : 8,
+              background: safeProjectSectionIndex === idx
+                ? "linear-gradient(to bottom, #de5ca1, #76b729)"
+                : "transparent",
+              border: safeProjectSectionIndex === idx ? "none" : "1.5px solid #d9609b",
+              opacity: 1,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
 // --- MAIN APP ---
 
 export default function Home() {
   const [activeSectionIndex, setActiveSectionIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0); // State for internal section slides
   const [isScrolling, setIsScrolling] = useState(false);
-  const [isProjectsOverlayOpen, setIsProjectsOverlayOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState<"home" | "projects">("home");
+  const [projectsFilter, setProjectsFilter] = useState<string | undefined>();
+  const [projectSlug, setProjectSlug] = useState<string | undefined>();
+  const [projectSectionSlug, setProjectSectionSlug] = useState<number | undefined>();
   const activeSection = SECTIONS[activeSectionIndex] ?? "mission";
 
   // Touch handling
   const [touchStart, setTouchStart] = useState<number | null>(null);
+  const activeSectionIndexRef = useRef(activeSectionIndex);
+  const subIndexRef = useRef(subIndex);
+  const isScrollingRef = useRef(isScrolling);
+  const currentPageRef = useRef(currentPage);
+  const scrollUnlockTimeoutRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    if (activeSection !== "progetti" && isProjectsOverlayOpen) {
-      setIsProjectsOverlayOpen(false);
+  activeSectionIndexRef.current = activeSectionIndex;
+  subIndexRef.current = subIndex;
+  isScrollingRef.current = isScrolling;
+  currentPageRef.current = currentPage;
+
+  const scheduleScrollUnlock = useCallback((delay: number) => {
+    if (scrollUnlockTimeoutRef.current !== null) {
+      window.clearTimeout(scrollUnlockTimeoutRef.current);
     }
-  }, [activeSection, isProjectsOverlayOpen]);
+
+    scrollUnlockTimeoutRef.current = window.setTimeout(() => {
+      setIsScrolling(false);
+      isScrollingRef.current = false;
+      scrollUnlockTimeoutRef.current = null;
+    }, delay);
+  }, []);
+
+  const navigateByScrollDirection = useCallback((direction: "next" | "prev") => {
+    if (currentPageRef.current !== "home" || isScrollingRef.current) {
+      return;
+    }
+
+    const currentSection = SECTIONS[activeSectionIndexRef.current] ?? "mission";
+    const subSlideCount = getSectionSlideCount(currentSection);
+
+    isScrollingRef.current = true;
+    setIsScrolling(true);
+
+    if (direction === "next") {
+      if (subIndexRef.current < subSlideCount - 1) {
+        setSubIndex((prev) => prev + 1);
+        scheduleScrollUnlock(800);
+        return;
+      }
+
+      if (activeSectionIndexRef.current < SECTIONS.length - 1) {
+        setActiveSectionIndex((prev) => prev + 1);
+        setSubIndex(0);
+        scheduleScrollUnlock(1000);
+        return;
+      }
+    } else {
+      if (subIndexRef.current > 0) {
+        setSubIndex((prev) => prev - 1);
+        scheduleScrollUnlock(800);
+        return;
+      }
+
+      if (activeSectionIndexRef.current > 0) {
+        const prevIndex = activeSectionIndexRef.current - 1;
+        const prevSection = SECTIONS[prevIndex] ?? "mission";
+        const prevSlideCount = getSectionSlideCount(prevSection);
+
+        setActiveSectionIndex(prevIndex);
+        setSubIndex(prevSlideCount - 1);
+        scheduleScrollUnlock(1000);
+        return;
+      }
+    }
+
+    setIsScrolling(false);
+    isScrollingRef.current = false;
+  }, [scheduleScrollUnlock]);
+
+  // Handle path-based navigation
+  useEffect(() => {
+    const syncFromPath = () => {
+      const route = parseProjectsRoute();
+      if (route.isProjects) {
+        setCurrentPage("projects");
+        setProjectsFilter(route.service);
+        setProjectSlug(route.projectId);
+        setProjectSectionSlug(route.sectionIndex ?? 0);
+        if (route.needsCanonical) {
+          window.history.replaceState({}, "", getProjectsRoute(route.service, route.projectId, route.sectionIndex ?? 0));
+        }
+      } else {
+        setCurrentPage("home");
+        setProjectSlug(undefined);
+        setProjectSectionSlug(undefined);
+      }
+    };
+    window.addEventListener("popstate", syncFromPath);
+    syncFromPath();
+    return () => window.removeEventListener("popstate", syncFromPath);
+  }, []);
 
   // Scroll Jacking Logic
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      if (isProjectsOverlayOpen) return;
-      e.preventDefault(); 
-      
-      if (isScrolling) return;
+      if (currentPageRef.current !== "home") return;
+      if (Math.abs(e.deltaY) < 50) return;
 
-      const currentSection = SECTIONS[activeSectionIndex] ?? "mission";
-      const subSlideCount = getSectionSlideCount(currentSection);
+      e.preventDefault();
+      navigateByScrollDirection(e.deltaY > 0 ? "next" : "prev");
+    };
 
-      if (e.deltaY > 50) {
-        // Scroll Down
-        // Check if we have more sub-slides in current section
-        if (subIndex < subSlideCount - 1) {
-            setIsScrolling(true);
-            setSubIndex(prev => prev + 1);
-            setTimeout(() => setIsScrolling(false), 800); // Shorter cooldown for slides
-        } else {
-            // Next Section
-            if (activeSectionIndex < SECTIONS.length - 1) {
-                setIsScrolling(true);
-                setActiveSectionIndex(prev => prev + 1);
-                setSubIndex(0); // Reset sub-index for new section
-                setTimeout(() => setIsScrolling(false), 1000);
-            }
-        }
-      } else if (e.deltaY < -50) {
-        // Scroll Up
-        if (subIndex > 0) {
-             setIsScrolling(true);
-             setSubIndex(prev => prev - 1);
-             setTimeout(() => setIsScrolling(false), 800);
-        } else {
-             // Prev Section
-             if (activeSectionIndex > 0) {
-                 setIsScrolling(true);
-                 const prevIndex = activeSectionIndex - 1;
-                 const prevSection = SECTIONS[prevIndex] ?? "mission";
-                 const prevSlideCount = getSectionSlideCount(prevSection);
-                 
-                 setActiveSectionIndex(prevIndex);
-                 // Optional: start at last slide of previous section? 
-                 // For now, let's start at 0 to avoid confusion or standard behavior
-                 // Actually, standard scrollytelling usually goes to last slide when scrolling up.
-                 setSubIndex(prevSlideCount - 1); 
-                 
-                 setTimeout(() => setIsScrolling(false), 1000);
-             }
-        }
+    window.addEventListener("wheel", handleWheel, { passive: false });
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+      if (scrollUnlockTimeoutRef.current !== null) {
+        window.clearTimeout(scrollUnlockTimeoutRef.current);
       }
     };
-    
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    return () => window.removeEventListener("wheel", handleWheel);
-  }, [isScrolling, activeSectionIndex, subIndex, isProjectsOverlayOpen]);
+  }, [navigateByScrollDirection]);
 
   // Touch Events for Mobile Swipe
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -2094,44 +2867,13 @@ export default function Home() {
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStart === null) return;
-    if (isScrolling || isProjectsOverlayOpen) return;
+    if (isScrollingRef.current || currentPageRef.current !== "home") return;
 
     const touchEnd = e.changedTouches[0].clientY;
     const diff = touchStart - touchEnd;
-    
-    const currentSection = SECTIONS[activeSectionIndex] ?? "mission";
-    const subSlideCount = getSectionSlideCount(currentSection);
 
     if (Math.abs(diff) > 50) { // Threshold 50px
-        if (diff > 0) {
-            // Swipe Up (Next)
-             if (subIndex < subSlideCount - 1) {
-                setIsScrolling(true);
-                setSubIndex(prev => prev + 1);
-                setTimeout(() => setIsScrolling(false), 800);
-            } else if (activeSectionIndex < SECTIONS.length - 1) {
-                setIsScrolling(true);
-                setActiveSectionIndex(prev => prev + 1);
-                setSubIndex(0);
-                setTimeout(() => setIsScrolling(false), 1000);
-            }
-        } else {
-            // Swipe Down (Prev)
-            if (subIndex > 0) {
-                setIsScrolling(true);
-                setSubIndex(prev => prev - 1);
-                setTimeout(() => setIsScrolling(false), 800);
-           } else if (activeSectionIndex > 0) {
-                setIsScrolling(true);
-                const prevIndex = activeSectionIndex - 1;
-                const prevSection = SECTIONS[prevIndex] ?? "mission";
-                const prevSlideCount = getSectionSlideCount(prevSection);
-                
-                setActiveSectionIndex(prevIndex);
-                setSubIndex(prevSlideCount - 1);
-                setTimeout(() => setIsScrolling(false), 1000);
-           }
-        }
+      navigateByScrollDirection(diff > 0 ? "next" : "prev");
     }
     setTouchStart(null);
   };
@@ -2140,14 +2882,51 @@ export default function Home() {
     const idx = SECTIONS.indexOf(id);
     if (idx !== -1) {
         setActiveSectionIndex(idx);
-        setIsProjectsOverlayOpen(false);
-        setSubIndex(0); // Reset subIndex on direct nav
+        setSubIndex(0);
     }
   };
 
+  const handleViewProjects = (category?: string) => {
+    const projects = getProjectsForService(category);
+    const firstProjectId = projects[0]?.id;
+    setProjectsFilter(category);
+    setProjectSlug(firstProjectId);
+    setProjectSectionSlug(0);
+    setCurrentPage("projects");
+    window.history.pushState({}, "", getProjectsRoute(category, firstProjectId, 0));
+  };
+
+  const handleBackFromProjects = useCallback(() => {
+    setCurrentPage("home");
+    window.history.pushState({}, "", "/");
+  }, []);
+
+  const handleProjectChange = useCallback((projectId: string, sectionIndex: number) => {
+    setProjectSlug(projectId);
+    setProjectSectionSlug(sectionIndex);
+
+    const nextUrl = getProjectsRoute(projectsFilter, projectId, sectionIndex);
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    if (nextUrl !== currentUrl) {
+      window.history.pushState({}, "", nextUrl);
+    }
+  }, [projectsFilter]);
+
+  if (currentPage === "projects") {
+    return (
+      <ProjectsPage
+        onBack={handleBackFromProjects}
+        service={projectsFilter}
+        initialProjectId={projectSlug}
+        initialSectionIndex={projectSectionSlug}
+        onProjectChange={handleProjectChange}
+      />
+    );
+  }
+
   return (
     <div 
-        className="bg-transparent relative w-screen h-screen overflow-hidden font-['Inter',sans-serif]"
+        className="bg-transparent relative w-screen h-screen overflow-visible font-['Inter',sans-serif]"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
     >
@@ -2169,36 +2948,10 @@ export default function Home() {
            activeSection={activeSection}
            subIndex={subIndex}
            setSubIndex={setSubIndex}
+           onViewProjects={handleViewProjects}
          />
       </div>
-
-      {activeSection === "progetti" && !isProjectsOverlayOpen && (
-        <button
-          type="button"
-          onClick={() => setIsProjectsOverlayOpen(true)}
-          className="fixed right-3 bottom-3 md:right-[64px] md:bottom-[24px] lg:right-[74px] lg:bottom-[26px] bg-[#dfd9cf] px-[18px] py-[10px] md:px-[22px] md:py-[11px] rounded-[46px] flex gap-[8px] md:gap-[9px] items-center border border-[#d5d0c8] pointer-events-auto z-[220]"
-        >
-          <p className="font-['Roboto_Mono',monospace] font-semibold text-[14px] md:text-[18px] text-[#7c7b77] tracking-[-0.01em] leading-none">Lista progetti</p>
-          <div className="size-[16px] md:size-[18px] text-[#7c7b77]">
-            <svg className="size-full" fill="none" viewBox="0 0 24 24">
-              <path d="M4 6H16" stroke="currentColor" strokeWidth="1.85" strokeLinecap="round" />
-              <path d="M4 12H16" stroke="currentColor" strokeWidth="1.85" strokeLinecap="round" />
-              <path d="M4 18H16" stroke="currentColor" strokeWidth="1.85" strokeLinecap="round" />
-              <circle cx="20" cy="6" r="1.25" fill="currentColor" />
-              <circle cx="20" cy="12" r="1.25" fill="currentColor" />
-              <circle cx="20" cy="18" r="1.25" fill="currentColor" />
-            </svg>
-          </div>
-        </button>
-      )}
-
-      {/* 5. Projects Overlay - rendered at root level to escape stacking contexts */}
-      <ProjectsListOverlay
-        isOpen={isProjectsOverlayOpen}
-        onClose={() => setIsProjectsOverlayOpen(false)}
-        activeProjectId={FEATURED_PROJECTS[subIndex]?.id ?? "pernigotti"}
-        onSelectProject={(index) => setSubIndex(index)}
-      />
     </div>
   );
 }
+

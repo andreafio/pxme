@@ -1,0 +1,238 @@
+/**
+ * CSS Variables - Design System Pxme
+ * 
+ * Includi nel tuo global CSS per utilizzare le variabili di seguito
+ * nel componente ProjectSection e in tutto il sito.
+ * 
+ * Uso:
+ * @import './pxme-design-system.css';
+ * 
+ * Nel componente:
+ * color: var(--pxme-green-primary);
+ * font-family: var(--font-heading);
+ */
+
+:root {
+  /* ========================================
+     COLORI PALETTE PXME
+     ======================================== */
+  
+  /* Primario */
+  --pxme-green-primary: #7EB83A;
+  --pxme-green-light: #A5D65F;
+  --pxme-green-dark: #5D8B2A;
+  
+  /* Secondario */
+  --pxme-magenta: #C94B8F;
+  --pxme-magenta-light: #DE5CA1;
+  --pxme-magenta-dark: #B03A75;
+  
+  /* Accento */
+  --pxme-pink: #D6889A;
+  --pxme-pink-light: #E5A5B4;
+  --pxme-pink-dark: #C56B7E;
+  
+  /* Neutrali */
+  --pxme-ghost: #E8E8E8;
+  --pxme-light-gray: #F5F5F5;
+  --pxme-medium-gray: #D9D9D9;
+  --pxme-dark-gray: #3A3A3A;
+  --pxme-text: #1A1A1A;
+  --pxme-background: #FFFFFF;
+  --pxme-dark-background: #1A1A1A;
+  
+  /* ========================================
+     TIPOGRAFIA
+     ======================================== */
+  
+  /* Font families (update based on your imports) */
+  --font-heading: "Inter", "Outfit", "DM Sans", sans-serif;
+  --font-body: "Inter", "Segoe UI", sans-serif;
+  
+  /* Font weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-black: 900;
+  
+  /* ========================================
+     SPAZI (8px baseline grid)
+     ======================================== */
+  
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+  --space-4xl: 64px;
+  --space-5xl: 96px;
+  
+  /* ========================================
+     BORDER RADIUS
+     ======================================== */
+  
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 999px;
+  
+  /* ========================================
+     SHADOW
+     ======================================== */
+  
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.1);
+  
+  /* ========================================
+     ANIMAZIONI
+     ======================================== */
+  
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --easing-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --easing-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --easing-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* ========================================
+     BREAKPOINTS (Tailwind style)
+     ======================================== */
+  
+  --bp-sm: 640px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --bp-xl: 1280px;
+  --bp-2xl: 1536px;
+  
+  /* ========================================
+     GRADIENTS (predefiniti)
+     ======================================== */
+  
+  --gradient-primary: linear-gradient(135deg, var(--pxme-green-primary), var(--pxme-magenta));
+  --gradient-secondary: linear-gradient(135deg, var(--pxme-magenta), var(--pxme-pink));
+  --gradient-dark: linear-gradient(135deg, var(--pxme-dark-background), var(--pxme-text));
+}
+
+/* ========================================
+   UTILITY CLASSES (Opzionale)
+   ======================================== */
+
+.text-heading {
+  font-family: var(--font-heading);
+  font-weight: var(--font-weight-black);
+  letter-spacing: -0.01em;
+}
+
+.text-body {
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.6;
+}
+
+.text-accent {
+  color: var(--pxme-green-primary);
+}
+
+.text-accent-magenta {
+  color: var(--pxme-magenta);
+}
+
+.bg-accent {
+  background-color: var(--pxme-green-primary);
+}
+
+.bg-accent-magenta {
+  background-color: var(--pxme-magenta);
+}
+
+.border-accent {
+  border-color: var(--pxme-green-primary);
+}
+
+.border-accent-magenta {
+  border-color: var(--pxme-magenta);
+}
+
+.shadow-card {
+  box-shadow: var(--shadow-md);
+}
+
+.shadow-elevated {
+  box-shadow: var(--shadow-lg);
+}
+
+.shadow-modal {
+  box-shadow: var(--shadow-2xl);
+}
+
+/* ========================================
+   RESPONSIVE MEDIA QUERIES
+   ======================================== */
+
+@media (max-width: 640px) {
+  :root {
+    --bp-current: sm;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --bp-current: md;
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --bp-current: lg;
+  }
+}
+
+@media (max-width: 1280px) {
+  :root {
+    --bp-current: xl;
+  }
+}
+
+@media (max-width: 1536px) {
+  :root {
+    --bp-current: 2xl;
+  }
+}
+
+/* ========================================
+   PREFERS REDUCED MOTION
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+    --duration-slow: 0ms;
+  }
+  
+  * {
+    animation-duration: 0ms !important;
+    transition-duration: 0ms !important;
+  }
+}
+
+/* ========================================
+   DARK MODE (se necessario)
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --pxme-background: #0f0f0f;
+    --pxme-text: #f5f5f5;
+    --pxme-ghost: #2a2a2a;
+    --pxme-light-gray: #1a1a1a;
+  }
+}
